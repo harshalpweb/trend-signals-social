@@ -1,0 +1,16 @@
+{
+  "id": "2026-08-23-build-in-public-01",
+  "type": "build_in_public",
+  "caption": "How TrendRadar actually works, in one post:\n\nWe pull live signals — search interest, marketplace bestsellers, festival-calendar timing — and score each product or category on how fast it's moving right now, not how big it already is.\n\nThis week's top mover (saree) was flagged before most people would think to look. That's the whole bet: catch it early, show our work, and never claim more than the data actually supports.\n\nNo guesses. No hype. Just signals.\n\n#BuildInPublic #TrendRadar #DataDriven #StartupIndia #TrendSpotting",
+  "slides": [
+    "content/queue/slides/2026-08-23-build-in-public-01-1.png",
+    "content/queue/slides/2026-08-23-build-in-public-01-2.png",
+    "content/queue/slides/2026-08-23-build-in-public-01-3.png",
+    "content/queue/slides/2026-08-23-build-in-public-01-4.png",
+    "content/queue/slides/2026-08-23-build-in-public-01-5.png"
+  ],
+  "scheduled_time_ist": "2026-08-23T20:00:00+05:30",
+  "status": "pending",
+  "attempts": 0,
+  "needs_review": false
+}
