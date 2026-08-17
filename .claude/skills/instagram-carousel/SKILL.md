@@ -12,21 +12,23 @@ There is no formal Canva "Brand Kit" for this account — the Canva plugin's MCP
 - **Design ID: `DAHSjFtuvnU`** ("Premium Weekly Trend Report Cover"), view: `https://www.canva.com/d/3J_392N-M0vMkzb`
 - Filed in the **`TrendRadar`** Canva folder (`FAHSjORWXy8`, `https://www.canva.com/folder/FAHSjORWXy8`)
 - Locked 2026-08-17, matching the visual identity already live in the account's first post (`content/posted/2026-08-17-build-in-public-01`): dark navy-teal gradient background, single bright teal accent (~`#2FE0C4`), globe-icon + "TrendRadar" wordmark, thin divider lines, two-column footer.
+- **Revised 2026-08-17 (same day, first-week fix)**: the template originally had a large empty "content box" (meant for a chart/number graphic) that was never actually filled by any generation pass, because `perform-editing-operations` has no operation to insert a *new* text element — only `replace_text`/`format_text` on existing ones, `update_fill`/`insert_fill` for image/video, and `delete_element`/`position_element`/`resize_element`. Filling it with a real chart would require generating a chart image externally and hosting it somewhere `upload-asset-from-url` can fetch — infrastructure that doesn't exist yet. It shipped empty on the account's very first live post and looked like a broken placeholder. **The content box has been deleted from the master template** and the footer/divider repositioned up to close the gap (footer top ≈513, divider top ≈488/height 80, matching the subhead's bottom + ~85px). Every future `copy-design` off `DAHSjFtuvnU` inherits this fix automatically — do not reintroduce a content box unless it's actually going to be filled with real content in the same pass.
 
 **Before relying on any element ID below, re-run `start-editing-transaction` on `DAHSjFtuvnU` and check the returned `richtexts`/`fills` — Canva element IDs can shift if the design is manually edited in the UI. Treat the map below as a starting point, not gospel.**
 
-Element map (as of 2026-08-17, page 1):
+Element map (as of 2026-08-17, post-fix, page 1):
 
 | Role | Element ID | Type |
 |---|---|---|
 | Wordmark "TrendRadar" | `PB4XfbSw4LCC234t-LBynVfp2X6xLD8Mx` | text |
 | Headline (post title) | `PB4XfbSw4LCC234t-LByRFT0bqLypb8X8` | text |
 | Subhead | `PB4XfbSw4LCC234t-LBmlhR5m1d05vxbp` | text |
-| Main content box (chart/number/graphic goes here) | `PB4XfbSw4LCC234t-LBPDdxWR299PDC1n` | image fill, 748x457 |
-| Footer left column text | `PB4XfbSw4LCC234t-LBmKWH981pRxNNcs` | text (widened to 300px — don't let it revert to the narrow default or long text will wrap character-by-character) |
-| Footer right column text | `PB4XfbSw4LCC234t-LBcLCD8494LgrmZV` | text (widened to 300px, same caveat) |
-| Footer divider line | `PB4XfbSw4LCC234t-LBtDh0rBg4CTVltg` | image |
+| Footer left column text | `PB4XfbSw4LCC234t-LBmKWH981pRxNNcs` | text (widened to 300px, top≈513 — don't let width revert to the narrow default or long text will wrap character-by-character) |
+| Footer right column text | `PB4XfbSw4LCC234t-LBcLCD8494LgrmZV` | text (widened to 300px, top≈513, same caveat) |
+| Footer divider line | `PB4XfbSw4LCC234t-LBtDh0rBg4CTVltg` | image, top≈488, height 80 |
 | Globe icon | `PB4XfbSw4LCC234t-LBh3vwM95jcLyhZR` | image |
+
+**There is no content box anymore.** If a future iteration wants a real chart/number visual, that needs new infrastructure (generate a chart image, host it somewhere fetchable, `upload-asset-from-url` it in) — don't add an empty placeholder box back as a shortcut.
 
 ## Weekly generation steps
 
