@@ -1,0 +1,35 @@
+name: Publish due posts
+
+on:
+  schedule:
+    - cron: "0 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r scripts/requirements.txt
+
+      - run: python scripts/publish_due_posts.py
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+
+      - name: Commit queue/status changes
+        run: |
+          git config user.name "trendradar-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add -A content/
+          git diff --cached --quiet || git commit -m "chore: publish run $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          git push

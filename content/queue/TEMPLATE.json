@@ -1,0 +1,12 @@
+{
+  "id": "YYYY-MM-DD-type-NN",
+  "type": "signal | digest | build_in_public",
+  "caption": "Full caption text including hashtags.",
+  "slides": [
+    "content/queue/slides/YYYY-MM-DD-type-NN-1.png",
+    "content/queue/slides/YYYY-MM-DD-type-NN-2.png"
+  ],
+  "scheduled_time_ist": "YYYY-MM-DDTHH:MM:SS+05:30",
+  "status": "pending",
+  "attempts": 0
+}
