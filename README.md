@@ -9,8 +9,8 @@ in the `trend_predictor` repo.
 
 ## How it works
 
-1. **Content generation** (weekly, Claude-driven): a scheduled Claude Code
-   cloud agent (weekly cron, see "Scheduler" below) runs the
+1. **Content generation** (weekly, Claude-driven): a local Windows Scheduled
+   Task (weekly, see "Scheduler" below — not a cloud agent) runs the
    `instagram-weekly-routine` skill in `.claude/skills/`, which reads current
    `trend_predictor` signals, generates that week's carousels via the Canva
    MCP tools (from the locked master template — see `instagram-carousel`),
@@ -44,10 +44,16 @@ in the `trend_predictor` repo.
 
 ## Scheduler
 
-A weekly cron-triggered cloud agent runs `instagram-weekly-routine` (see the
-`schedule` skill in the Claude Code session that set this up). Content is
-queued ahead of each week automatically — no manual founder involvement
-beyond optional spot-checking.
+A **local** Windows Scheduled Task (`TrendRadarWeeklyContent`, weekly Sunday
+18:00 local time, registered by `trend_predictor/scripts/register_instagram_task.ps1`)
+runs `instagram-weekly-routine` headlessly via `claude -p`. It's local rather
+than a cloud routine because the account's Canva connection is a local
+plugin and the routine needs the live local `trend_predictor` DB — see that
+script's header comment for the full reasoning. This machine needs to be
+powered on and logged in around the scheduled time for it to fire. Content
+is queued ahead of each week automatically — no manual founder involvement
+beyond optional spot-checking, and clearing `needs_review: true` flags (see
+"Queue format" below) before those specific posts will go out.
 
 ## Queue format
 
@@ -56,8 +62,9 @@ PNGs under `content/queue/slides/`. `scheduled_time_ist` must include the
 `+05:30` offset. To cancel a queued post before it goes out, delete its JSON
 file (and slides) before `scheduled_time_ist`. `needs_review: true` means
 `instagram-carousel`'s self-critique gate didn't fully pass after 2 revision
-passes — worth a quick look before it publishes, though it'll still go out
-on schedule if left untouched.
+passes — `publish_due_posts.py` holds these and will **not** publish them on
+schedule; edit the JSON and set `needs_review` to `false` once you've looked
+at it to let it go out.
 
 ## Required GitHub Secrets
 

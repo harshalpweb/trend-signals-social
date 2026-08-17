@@ -1,6 +1,6 @@
 ---
 name: instagram-weekly-routine
-description: Top-level orchestrator for TrendRadar's weekly Instagram content generation. Runs once a week (via a scheduled cloud agent — see the `schedule` skill) and produces a full week of queued posts, unattended. Use this skill directly when the weekly routine fires; the sub-skills (instagram-signals, instagram-carousel, instagram-caption) are called from within it, not invoked separately in normal operation.
+description: Top-level orchestrator for TrendRadar's weekly Instagram content generation. Runs once a week via a local Windows Scheduled Task (TrendRadarWeeklyContent, registered by trend_predictor/scripts/register_instagram_task.ps1 — not a cloud routine, see that script's header comment for why) and produces a full week of queued posts, unattended. Use this skill directly when the weekly routine fires; the sub-skills (instagram-signals, instagram-carousel, instagram-caption) are called from within it, not invoked separately in normal operation.
 ---
 
 # Weekly Content-Generation Routine
@@ -26,13 +26,13 @@ For each day in the week ahead (Mon/Wed/Fri = signal, Sat = digest, Sun = build_
    - `slides`: paths under `content/queue/slides/`, matching what `instagram-carousel` exported.
    - `status`: `"pending"`, `attempts`: `0`.
    - Add `"needs_review": true` if `instagram-carousel`'s self-critique gate didn't fully pass.
-5. **Don't repeat a signal entity from the last 2 weeks** (see `instagram-signals`) — check `content/posted/*.json` and this run's own new entries before finalizing the week's entity picks.
+5. **Don't repeat a signal entity from the last 2 weeks** (see `instagram-signals`) — check `content/posted/*/*.json` (nested one directory per post, not flat) and this run's own new entries before finalizing the week's entity picks.
 
 ## After generating the week
 
 1. `git add content/queue/` (new JSON + slide PNGs only — never touch `content/posted/`, `content/failed/`, or anything under `scripts/`).
-2. Commit with a message like `content: queue week of {date}` and push to `trend-signals-social`'s default branch.
-3. Everything after this is automatic — `.github/workflows/publish.yml` (hourly) picks up due posts from the queue. This skill does not publish anything itself.
+2. `git pull --rebase origin main` **before** committing/pushing, then commit with a message like `content: queue week of {date}` and push. The hourly `publish.yml` workflow also commits to `main` (moving posted files) — a plain push without rebasing first can get rejected by a commit it made in the meantime. If the push is still rejected after one rebase retry, pull-rebase again rather than force-pushing.
+3. Everything after this is automatic — `.github/workflows/publish.yml` (hourly) picks up due posts from the queue, **except** any post queued with `needs_review: true`, which `publish_due_posts.py` holds until a human clears the flag. This skill does not publish anything itself.
 
 ## Failure handling
 

@@ -15,7 +15,7 @@ See `config.yaml` in this folder. Do not hardcode these values elsewhere — rea
 
 ## Format & cadence
 
-- **Static image carousels only** for now, not Reels — reliable to automate, and carousels benchmark competitively (~0.50-0.55% engagement vs ~0.48-0.52% for Reels). Revisit Reels once the carousel pipeline has run reliably for several weeks. [references/design-trends.md, references/case-studies.md]
+- **Static image carousels only** for now, not Reels — reliable to automate, and in the education/data niche specifically, carousels edge out Reels on engagement rate (~0.55% vs ~0.52%, per the case-study research — not a universal Instagram-wide benchmark, treat as directional). Revisit Reels once the carousel pipeline has run reliably for several weeks. [references/case-studies.md]
 - **5-7 slides per carousel** is the sweet spot for data-reveal content. Below 5, not enough room for a hook + payoff + depth; above 7-8, completion rate drops. [references/design-trends.md]
 - **5 posts/week**, not daily: Mon/Wed/Fri = trend-signal carousels, Sat = weekly digest/leaderboard, Sun = build-in-public/methodology. Daily posting was explicitly rejected as a vanity metric that dilutes the "receipts" identity with filler.
 - **Posting window**: aim for evening IST (roughly 7-9pm), which aggregate creator data suggests is peak India activity — but this is *not* Meta-official data. [confirmed vs speculative — see references/algorithm.md §5] Once the account has 2+ weeks of its own Insights data, switch to that instead of the aggregate default — it's more predictive than any external benchmark.
@@ -30,7 +30,7 @@ See `config.yaml` in this folder. Do not hardcode these values elsewhere — rea
 ## What makes data content genuinely shareable (not just likeable)
 
 - Optimize for **saves**, not likes. Saves signal "reference-quality" content and outrank likes in distribution weight — this is the correct metric for a receipts-style account, not a consolation prize. [references/psychology.md §3]
-- Design for saves: clean typography, one stat per slide, visible source citation (small but always present — 93% of credible data content cites sources, and its absence is a trust signal in the wrong direction). [references/design-trends.md §4]
+- Design for saves: clean typography, one stat per slide, visible source citation (small but always present — its absence reads as a missing trust signal, not a neutral omission). [references/design-trends.md §4]
 - DM shares ("sends per reach") carry the highest weight for reaching non-followers of any single signal. Frame content so it's the kind of thing someone forwards to a specific person ("this is exactly what you were asking about"), not just broadcasts. [references/algorithm.md §1, confirmed]
 - Genuine comment-bait that fits the brand: prediction polls ("which of these surprises you most?"), not generic "comment below!" spam. [references/psychology.md §4]
 

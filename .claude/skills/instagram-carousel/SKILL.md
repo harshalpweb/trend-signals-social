@@ -36,7 +36,7 @@ Element map (as of 2026-08-17, page 1):
    - Data slides: headline = the entity/number from `instagram-signals`, main content box = a chart/number graphic (`insert_fill` or `update_fill` with an uploaded asset — see `upload-asset-from-url` — or a simple large-number text treatment if no chart asset is warranted), footer = source citation (small, always present — see `instagram-growth/references/design-trends.md` §4).
    - Closing slide: headline = CTA ("Follow for weekly signals" or similar, matching the account's established voice), footer = "Data-backed." / "Not hype." (the locked tagline) or a swap-in relevant to that week.
    - Keep 1-2 sentences max per slide (per `instagram-growth` rules) — this is not a report.
-3. **Export each slide**: `get-export-formats` for the design first (required before `export-design`), then `export-design` with `type: png`, full resolution (1080 width). Save into `content/queue/slides/{scheduled_date}-{slug}-{n}.png` in this repo.
+3. **Export each slide**: `get-export-formats` for the design first (required before `export-design`), then `export-design` with `type: png`, full resolution (1080 width). `export-design` returns a signed download URL, not a file — download it (e.g. `curl -sL "<url>" -o content/queue/slides/{scheduled_date}-{slug}-{n}.png`) into this repo; the URL itself is not what goes in the queue JSON.
 4. **Self-critique gate** (this is what makes it "top notch," not just generated):
    - Run `canva:get-design-feedback` on the carousel.
    - If it flags hierarchy, readability, consistency, or accessibility issues: apply fixes via `canva:edit-design` (or the same `perform-editing-operations` flow above).

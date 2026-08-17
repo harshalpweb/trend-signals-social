@@ -15,7 +15,7 @@ Short sentences. Confident but not hyped. Every claim traceable to an actual num
 
 ## By post type
 
-- **signal** (Mon/Wed/Fri): Lead with the entity and the number, in one punchy line. State which signal families agree (`agreeing_families` from instagram-signals) — this is the "receipts" proof, make it visible, not buried. End with a genuine question (prediction-poll style, per `instagram-growth/references/psychology.md` §4) — e.g. "Seeing this in your category too?" — not generic engagement-bait.
+- **signal** (Mon/Wed/Fri): Lead with the entity and the number, in one punchy line. Check `agreeing_families` from instagram-signals before writing any corroboration claim: if it has 2+ entries, naming them is genuine "receipts" proof — make it visible. **If it has only 1 entry, do not write "signals agree," "confirmed across sources," or similar plural-corroboration language** — attribute the single real source instead ("per Google Trends search data"). A false corroboration claim would undermine the account's entire premise; a single honest source is still a real, defensible claim. End with a genuine question (prediction-poll style, per `instagram-growth/references/psychology.md` §4) — e.g. "Seeing this in your category too?" — not generic engagement-bait.
 - **digest** (Sat): Leaderboard framing — "This week's top movers:" followed by the 3-5 entities pulled by instagram-signals, each with its number. Close with a light forward-look, staying inside the `forward_dated_predictions: false` gate (frame as "worth watching," not "we predict").
 - **build_in_public** (Sun): Methodology/process content — what the engine actually does, a build update, or an honest limitation being worked on. This is the one post type that doesn't need a signal pull.
 

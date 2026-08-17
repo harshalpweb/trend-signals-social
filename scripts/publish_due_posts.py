@@ -51,6 +51,12 @@ def load_due_posts():
             continue
         if post["status"] != "pending":
             continue
+        if post.get("needs_review"):
+            # Held until a human clears the flag (edit the JSON, set needs_review to
+            # false) — instagram-carousel's self-critique gate didn't fully pass on
+            # this one, so it must not auto-publish on schedule.
+            print(f"  {post.get('id', path.name)} held: needs_review is true, skipping")
+            continue
         scheduled = datetime.fromisoformat(post["scheduled_time_ist"])
         if scheduled <= now:
             due.append((path, post, None))
