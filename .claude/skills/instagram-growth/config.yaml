@@ -1,0 +1,31 @@
+# Founder-tunable knobs for the TrendRadar Instagram growth strategy.
+# Edit values here to change behavior — do not hardcode these elsewhere.
+# The weekly-routine skill reads this file at generation time.
+
+cadence:
+  posts_per_week: 5
+  schedule:
+    monday: signal
+    wednesday: signal
+    friday: signal
+    saturday: digest
+    sunday: build_in_public
+  posting_time_ist: "20:00"  # evening IST default (see references/algorithm.md §5) — switch to
+                              # the account's own Insights "most active times" once ~2 weeks of data exist
+
+tone:
+  aggressiveness: medium      # low | medium | high — how bold/curiosity-gap-forward hooks are
+  hype_tolerance: none         # none | low — "receipts not hype" brand; keep at none unless founder changes it
+
+content_mix:
+  forward_dated_predictions: false   # gate stays closed until trend_predictor's lead time is privately validated
+  trend_jacking: true                # ok to react fast to breaking trends, subject to the honesty rules in SKILL.md
+  max_hashtags: 5
+
+format:
+  slides_per_carousel_min: 5
+  slides_per_carousel_max: 7
+  reels: false                       # revisit once the static carousel pipeline has run reliably for several weeks
+
+future_work:
+  performance_feedback_loop: false   # explicitly not built — founder said "not now" (2026-08-17)

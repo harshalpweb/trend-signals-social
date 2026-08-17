@@ -8,5 +8,6 @@
   ],
   "scheduled_time_ist": "YYYY-MM-DDTHH:MM:SS+05:30",
   "status": "pending",
-  "attempts": 0
+  "attempts": 0,
+  "needs_review": false
 }
