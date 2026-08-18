@@ -20,13 +20,34 @@ jobs:
 
       - run: pip install -r scripts/requirements.txt
 
-      - run: python scripts/publish_due_posts.py
+      # Fails the run BEFORE publishing if the token/app is unhealthy, so the
+      # cause is one legible line instead of a publish traceback. Exit 2 =
+      # OAuthException (code 190 expiry vs code 200 app restriction).
+      # IG_AUTH_MODE / META_APP_* default to today's Instagram-Login model when
+      # the repo variable and secrets are absent, so behaviour is unchanged until
+      # Path 1 lands (see docs/platforms.md "Path 1 switch-over runbook").
+      - name: Check Instagram token health
+        run: python scripts/check_token.py
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_AUTH_MODE: ${{ vars.IG_AUTH_MODE || 'instagram_login' }}
+
+      # Exits non-zero if ANY due post failed (after processing them all and
+      # writing every state file) — a failed post must never be a green run.
+      - name: Publish due posts
+        run: python scripts/publish_due_posts.py
+        env:
+          IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
+          IG_AUTH_MODE: ${{ vars.IG_AUTH_MODE || 'instagram_login' }}
           GITHUB_REPOSITORY: ${{ github.repository }}
 
+      # always(): state changes written by a partially-failed publish run must
+      # still be persisted, otherwise the next hourly run retries from stale
+      # state (double-post risk) — but the job stays red from the step above.
       - name: Commit queue/status changes
+        if: always()
         run: |
           git config user.name "trendradar-bot"
           git config user.email "actions@users.noreply.github.com"

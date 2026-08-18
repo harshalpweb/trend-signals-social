@@ -17,8 +17,13 @@ jobs:
 
       - run: pip install -r scripts/requirements.txt
 
+      # META_APP_ID / META_APP_SECRET are only read when IG_AUTH_MODE is
+      # facebook_login; empty is fine (and expected) under instagram_login.
       - run: python scripts/refresh_token.py
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           REPO_ADMIN_TOKEN: ${{ secrets.REPO_ADMIN_TOKEN }}
+          IG_AUTH_MODE: ${{ vars.IG_AUTH_MODE || 'instagram_login' }}
+          META_APP_ID: ${{ secrets.META_APP_ID }}
+          META_APP_SECRET: ${{ secrets.META_APP_SECRET }}
           GITHUB_REPOSITORY: ${{ github.repository }}

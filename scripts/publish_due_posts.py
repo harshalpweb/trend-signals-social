@@ -2,18 +2,28 @@
 
 Run hourly by .github/workflows/publish.yml. Pure stdlib + requests — no AI/Canva
 involved here; content is produced separately (see README).
+
+Exit code: 0 only if every due post published. If ANY due post failed — malformed,
+retry-pending, or permanently failed — the script still processes every remaining
+post and still writes all state files, then exits 1 at the very end so the
+workflow run goes red. A failed post must never be a green run.
+
+Every Graph call goes through scripts/ig_common.py: token in an Authorization
+header (never a query string) and every error string redacted, because
+`last_error` is printed AND committed to git by publish.yml's `if: always()`
+step — a token in an HTTPError message would be published to the repo.
 """
 import json
 import os
 import shutil
+import sys
 import time
 from datetime import datetime, timezone
 from pathlib import Path
 
-import requests
+import ig_common
+from ig_common import api_get, api_post, graph_base, redact
 
-API_VERSION = "v21.0"
-BASE = f"https://graph.instagram.com/{API_VERSION}"
 MAX_ATTEMPTS = 3
 POLL_INTERVAL_S = 3
 POLL_TIMEOUT_S = 60
@@ -25,6 +35,8 @@ FAILED_DIR = ROOT / "content" / "failed"
 
 IG_USER_ID = os.environ["IG_USER_ID"]
 ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
+ig_common.register_secret(ACCESS_TOKEN)
+BASE = graph_base()  # host follows IG_AUTH_MODE (instagram_login | facebook_login)
 RAW_BASE = f"https://raw.githubusercontent.com/{os.environ['GITHUB_REPOSITORY']}/main"
 
 REQUIRED_FIELDS = ["id", "type", "caption", "slides", "scheduled_time_ist", "status"]
@@ -65,25 +77,22 @@ def load_due_posts():
 
 def create_item_container(slide_path: str) -> str:
     image_url = f"{RAW_BASE}/{slide_path}"
-    resp = requests.post(
-        f"{BASE}/{IG_USER_ID}/media",
-        data={"image_url": image_url, "is_carousel_item": "true", "access_token": ACCESS_TOKEN},
-        timeout=30,
+    payload = api_post(
+        f"{IG_USER_ID}/media",
+        ACCESS_TOKEN,
+        data={"image_url": image_url, "is_carousel_item": "true"},
+        base=BASE,
     )
-    resp.raise_for_status()
-    return resp.json()["id"]
+    return payload["id"]
 
 
 def wait_until_finished(container_id: str) -> None:
     deadline = time.time() + POLL_TIMEOUT_S
     while time.time() < deadline:
-        resp = requests.get(
-            f"{BASE}/{container_id}",
-            params={"fields": "status_code", "access_token": ACCESS_TOKEN},
-            timeout=30,
+        payload = api_get(
+            container_id, ACCESS_TOKEN, params={"fields": "status_code"}, base=BASE
         )
-        resp.raise_for_status()
-        status = resp.json().get("status_code")
+        status = payload.get("status_code")
         if status == "FINISHED":
             return
         if status == "ERROR":
@@ -93,28 +102,27 @@ def wait_until_finished(container_id: str) -> None:
 
 
 def create_carousel_container(item_ids, caption: str) -> str:
-    resp = requests.post(
-        f"{BASE}/{IG_USER_ID}/media",
+    payload = api_post(
+        f"{IG_USER_ID}/media",
+        ACCESS_TOKEN,
         data={
             "media_type": "CAROUSEL",
             "children": ",".join(item_ids),
             "caption": caption,
-            "access_token": ACCESS_TOKEN,
         },
-        timeout=30,
+        base=BASE,
     )
-    resp.raise_for_status()
-    return resp.json()["id"]
+    return payload["id"]
 
 
 def publish_container(container_id: str) -> str:
-    resp = requests.post(
-        f"{BASE}/{IG_USER_ID}/media_publish",
-        data={"creation_id": container_id, "access_token": ACCESS_TOKEN},
-        timeout=30,
+    payload = api_post(
+        f"{IG_USER_ID}/media_publish",
+        ACCESS_TOKEN,
+        data={"creation_id": container_id},
+        base=BASE,
     )
-    resp.raise_for_status()
-    return resp.json()["id"]
+    return payload["id"]
 
 
 def publish_post(post: dict) -> str:
@@ -139,33 +147,45 @@ def move_post(path: Path, post: dict, dest_dir: Path) -> None:
     path.unlink(missing_ok=True)
 
 
-def main() -> None:
+def main() -> int:
     due = load_due_posts()
     if not due:
         print("No due posts.")
-        return
+        return 0
+
+    # Collected, not raised: every due post is processed and every state file is
+    # written before we decide the exit code.
+    failures: list[str] = []
 
     for path, post, precheck_error in due:
-        print(f"Processing {post.get('id', path.name)}...")
+        post_id = post.get("id", path.name)
+        print(f"Processing {post_id}...")
         if precheck_error is not None:
             post["status"] = "failed"
-            post["last_error"] = str(precheck_error)
+            post["last_error"] = redact(precheck_error)
             move_post(path, post, FAILED_DIR)
-            print(f"  malformed -> failed: {precheck_error}")
+            print(f"  malformed -> failed: {redact(precheck_error)}")
+            failures.append(f"{post_id}: malformed ({redact(precheck_error)})")
             continue
 
         try:
             ig_post_id = publish_post(post)
         except Exception as e:  # noqa: BLE001 - deliberately broad; every failure mode retries/fails the same way
+            # redact() is load-bearing: last_error is written to the queue JSON and
+            # committed to the repo by publish.yml, so an un-redacted requests error
+            # (which embeds the request URL) would publish the token.
+            reason = redact(e)
             post["attempts"] = post.get("attempts", 0) + 1
-            post["last_error"] = str(e)
+            post["last_error"] = reason
             if post["attempts"] >= MAX_ATTEMPTS:
                 post["status"] = "failed"
                 move_post(path, post, FAILED_DIR)
-                print(f"  failed permanently after {post['attempts']} attempts: {e}")
+                print(f"  failed permanently after {post['attempts']} attempts: {reason}")
+                failures.append(f"{post_id}: failed permanently after {post['attempts']} attempts ({reason})")
             else:
                 path.write_text(json.dumps(post, indent=2), encoding="utf-8")
-                print(f"  attempt {post['attempts']} failed, will retry next run: {e}")
+                print(f"  attempt {post['attempts']} failed, will retry next run: {reason}")
+                failures.append(f"{post_id}: attempt {post['attempts']} failed, retry pending ({reason})")
         else:
             post["status"] = "posted"
             post["ig_post_id"] = ig_post_id
@@ -173,6 +193,19 @@ def main() -> None:
             move_post(path, post, POSTED_DIR)
             print(f"  posted: {ig_post_id}")
 
+    if failures:
+        print(f"\n{len(failures)} of {len(due)} due post(s) FAILED:", file=sys.stderr)
+        for line in failures:
+            print(f"  - {line}", file=sys.stderr)
+        return 1
+
+    print(f"\nAll {len(due)} due post(s) published.")
+    return 0
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        sys.exit(main())
+    except Exception as e:  # noqa: BLE001 - never let a traceback leak a token
+        print(f"FATAL: {type(e).__name__}: {redact(e)}", file=sys.stderr)
+        sys.exit(1)
