@@ -22,7 +22,7 @@ Last verified: **2026-08-19** (CSMM live probe).
 | Token | long-lived, ~60 days; auto-refreshed **monthly** by `.github/workflows/refresh_token.yml` → `scripts/refresh_token.py` (writes the new value back into the `IG_ACCESS_TOKEN` repo secret) |
 | Secret locations | GitHub Actions secrets `IG_ACCESS_TOKEN`, `IG_USER_ID`, `REPO_ADMIN_TOKEN`; local user env vars `INSTAGRAM_ACCESS_TOKEN`, `INSTAGRAM_USER_ID` (`HKCU\Environment`) |
 | Rails | `.github/workflows/publish.yml` — **hourly** (`cron: 0 * * * *`), runs `scripts/check_token.py` then `scripts/publish_due_posts.py` over the JSON queue in `content/queue/` |
-| Health probe | `py -3.12 scripts/check_token.py` (exit 0 live / 2 OAuthException / 3 config / 4 network) |
+| Health probe | `py -3.12 scripts/check_token.py` (exit 0 live / 2 OAuthException / 3 config / 4 network). CI adds `--incident-file content/INCIDENT.json --due-count "$DUE"` — see "Incident throttle" below. |
 | Graph client | `scripts/ig_common.py` — all three scripts go through it: token in an `Authorization: Bearer` header (never a query string), 30s timeout, every error string redacted. Tests: `py -3.12 -m pytest -q` (offline). |
 | Publishing cap | ~25 API posts per rolling 24h — `GET /{ig-user-id}/content_publishing_limit` before any batch |
 | Status | 🔴 **INCIDENT — `OAuthException code 200 "API access blocked."`** |
@@ -50,6 +50,77 @@ inferred, not read.
 **Impact:** no post has actually exercised the token since 2026-08-17 — every hourly run since
 has printed "No due posts", so the restriction has been invisible. The next genuinely due post
 would have failed silently on a green run before today's `publish.yml` change.
+
+**Confirmed in production 2026-08-18T21:03Z** — GitHub Actions run
+[`32185651913`](https://github.com/harshalpweb/trend-signals-social/actions/runs/32185651913),
+*Publish due posts* → *Check Instagram token health*, **red**:
+
+```
+FAIL: OAuthException code=200: API access blocked.
+```
+
+So the restriction is on the **app/account**, not on this machine, this token copy, or the local
+environment: CI holds a separately-stored copy of the same long-lived token, resolves DNS from a
+GitHub runner, and gets the identical error. That closes off "stale local env var" and "corrupted
+token string" as explanations. The health gate itself is therefore proven end-to-end — it caught a
+real, live failure on its first production run.
+
+### Incident throttle (added 2026-08-19)
+
+The gate working correctly created a second problem: an hourly cron that goes red every hour for
+one known, **founder-blocked** cause emails the founder ~24×/day and trains everyone to ignore the
+alert — at which point the gate is worse than useless. `check_token.py` now takes
+`--incident-file PATH` and `--due-count N`, and `publish.yml` computes
+`DUE=$(python scripts/publish_due_posts.py --count-due)` first:
+
+| Situation | Exit | Run | Why |
+|---|---|---|---|
+| First detection (no `content/INCIDENT.json`) | 2 | 🔴 red | One notification per incident — the founder must learn about it. |
+| Repeat detection, `DUE=0` | 0 | 🟢 green + `WARN:` line | Nothing was lost this hour; there is no new information to send. |
+| Repeat detection, `DUE>0` | 2 | 🔴 red | Posts are due and cannot go out — new damage every hour, so alert every hour. |
+| Corrupt/unreadable incident file | 2 | 🔴 red | A mangled file must never be able to silence an alert. |
+| `$DUE` empty or non-numeric | 2 | 🔴 red | "Unknown" is treated as "posts are due" — fail loudly rather than risk silent loss. |
+| Token live again, incident file present | 0 | 🟢 green + `RECOVERED:` line | See below. |
+
+Not throttled on purpose: exit 3 (missing config) and exit 4 (network/parse). Those are a broken
+setup or a self-clearing transient, not a standing incident.
+
+`content/INCIDENT.json` is the durable record, committed by the workflow's `git add -A content/`
+step (which also stages its deletion on recovery):
+
+```json
+{
+  "first_seen_utc": "...", "last_seen_utc": "...", "checks_failed": 7,
+  "code": 200, "message": "OAuthException code=200: API access blocked.",
+  "auth_mode": "instagram_login", "hint": "code 200 is an app/account-level restriction, ..."
+}
+```
+
+`message` and `hint` go through `redact()` before they are written — this file is committed to the
+repo, so it is under exactly the same no-secret rule as `post["last_error"]`.
+
+**Nothing is hidden while quiet:** a throttled hour still prints the full `FAIL:` + `HINT:` lines
+and still increments `checks_failed`, so `git log content/INCIDENT.json` reconstructs the whole
+outage. And a throttled hour cannot burn API attempts: with `DUE=0` the publish step runs but
+`load_due_posts()` returns nothing and makes zero Graph calls; with `DUE>0` the check exits 2 and
+the publish step is skipped entirely.
+
+**Recovery signal — how you know it is over.** Two things happen together on the first green probe:
+
+```
+OK: token live for @trendradar.in (id=…)
+RECOVERED: token live again - incident open since <first_seen> (<n> failed checks) cleared; removed content/INCIDENT.json
+```
+
+and `content/INCIDENT.json` **disappears from the repo** in that run's `chore: publish run …`
+commit. Either signal alone is enough; the file's absence is the one to check when reading state
+rather than logs. When it clears, update the Status row above and close this section.
+
+**Watch item:** the throttle buys quiet only until the next queued post comes due. `content/queue/`
+currently holds pending posts for 2026-08-19/21/22/23 — from the moment one of them is due, `DUE>0`
+and the hourly run is red again every hour, by design (posts really are being lost). If the incident
+is still open then, the queue should be pushed out or held (`needs_review: true`) rather than the
+alert weakened — that is a Growth-Lead/CoS queue decision, not a CSMM one.
 
 ## Shared Graph client — `scripts/ig_common.py`
 

@@ -12,7 +12,15 @@ Every Graph call goes through scripts/ig_common.py: token in an Authorization
 header (never a query string) and every error string redacted, because
 `last_error` is printed AND committed to git by publish.yml's `if: always()`
 step — a token in an HTTPError message would be published to the repo.
+
+`--count-due` prints just the number of currently-due posts and exits 0, doing
+nothing else: no Graph call, no file written, no credentials required. It is the
+input to check_token.py's `--due-count` incident throttle (see publish.yml), so
+it must stay side-effect-free and must use exactly the same due logic as a real
+run — otherwise the throttle would be deciding on a different reality than the
+publisher acts on.
 """
+import argparse
 import json
 import os
 import shutil
@@ -33,11 +41,17 @@ QUEUE_DIR = ROOT / "content" / "queue"
 POSTED_DIR = ROOT / "content" / "posted"
 FAILED_DIR = ROOT / "content" / "failed"
 
-IG_USER_ID = os.environ["IG_USER_ID"]
-ACCESS_TOKEN = os.environ["IG_ACCESS_TOKEN"]
+# Read leniently at import time so `--count-due` (and the tests) work with no
+# credentials in the environment; the publish path calls require_env() first and
+# still dies loudly on anything missing.
+IG_USER_ID = os.environ.get("IG_USER_ID", "")
+ACCESS_TOKEN = os.environ.get("IG_ACCESS_TOKEN", "")
 ig_common.register_secret(ACCESS_TOKEN)
 BASE = graph_base()  # host follows IG_AUTH_MODE (instagram_login | facebook_login)
-RAW_BASE = f"https://raw.githubusercontent.com/{os.environ['GITHUB_REPOSITORY']}/main"
+RAW_BASE = (
+    f"https://raw.githubusercontent.com/"
+    f"{os.environ.get('GITHUB_REPOSITORY', '')}/main"
+)
 
 REQUIRED_FIELDS = ["id", "type", "caption", "slides", "scheduled_time_ist", "status"]
 
@@ -46,7 +60,22 @@ class PostError(Exception):
     pass
 
 
-def load_due_posts():
+def require_env() -> None:
+    """Fail loudly before the first Graph call if publish config is missing."""
+    missing = [
+        name
+        for name, value in (
+            ("IG_USER_ID", IG_USER_ID),
+            ("IG_ACCESS_TOKEN", ACCESS_TOKEN),
+            ("GITHUB_REPOSITORY", os.environ.get("GITHUB_REPOSITORY", "")),
+        )
+        if not value
+    ]
+    if missing:
+        raise SystemExit(f"FATAL: missing env var(s): {', '.join(missing)}")
+
+
+def load_due_posts(verbose: bool = True):
     due = []
     now = datetime.now(timezone.utc)
     for path in sorted(QUEUE_DIR.glob("*.json")):
@@ -67,7 +96,8 @@ def load_due_posts():
             # Held until a human clears the flag (edit the JSON, set needs_review to
             # false) — instagram-carousel's self-critique gate didn't fully pass on
             # this one, so it must not auto-publish on schedule.
-            print(f"  {post.get('id', path.name)} held: needs_review is true, skipping")
+            if verbose:
+                print(f"  {post.get('id', path.name)} held: needs_review is true, skipping")
             continue
         scheduled = datetime.fromisoformat(post["scheduled_time_ist"])
         if scheduled <= now:
@@ -147,7 +177,32 @@ def move_post(path: Path, post: dict, dest_dir: Path) -> None:
     path.unlink(missing_ok=True)
 
 
-def main() -> int:
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Publish due posts from content/queue/ to Instagram."
+    )
+    parser.add_argument(
+        "--count-due",
+        action="store_true",
+        help="Print only the number of currently-due posts and exit 0. "
+        "No Graph calls, no files touched, no credentials needed.",
+    )
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    # argv=None means "no arguments", NOT "read sys.argv" — main() is called
+    # directly from the test suite, where sys.argv holds pytest's own flags.
+    # The CLI entrypoint below passes sys.argv[1:] explicitly.
+    args = build_parser().parse_args([] if argv is None else argv)
+    if args.count_due:
+        # Same due logic as a real run, silenced: a post the publisher would
+        # skip must not be counted as due, or the incident throttle would fail
+        # runs for work that was never going to happen.
+        print(len(load_due_posts(verbose=False)))
+        return 0
+
+    require_env()
     due = load_due_posts()
     if not due:
         print("No due posts.")
@@ -205,7 +260,7 @@ def main() -> int:
 
 if __name__ == "__main__":
     try:
-        sys.exit(main())
+        sys.exit(main(sys.argv[1:]))
     except Exception as e:  # noqa: BLE001 - never let a traceback leak a token
         print(f"FATAL: {type(e).__name__}: {redact(e)}", file=sys.stderr)
         sys.exit(1)

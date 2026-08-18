@@ -26,8 +26,30 @@ jobs:
       # IG_AUTH_MODE / META_APP_* default to today's Instagram-Login model when
       # the repo variable and secrets are absent, so behaviour is unchanged until
       # Path 1 lands (see docs/platforms.md "Path 1 switch-over runbook").
+      #
+      # Incident throttle: --incident-file makes a *standing* failure red only
+      # when red is informative — first detection, or any hour with due posts.
+      # Why publishing stays safe in every branch:
+      #   token bad + DUE>0 -> check_token exits 2, this step fails, the publish
+      #                        step is skipped by the default success() gating:
+      #                        zero API attempts burned against a blocked app.
+      #   token bad + DUE=0 -> check_token exits 0 (throttled); the publish step
+      #                        runs, but load_due_posts() finds nothing and
+      #                        prints "No due posts" without a single Graph
+      #                        call. Also zero attempts burned.
+      #   first detection   -> exits 2 whatever DUE is, so the founder gets
+      #                        exactly one red run per incident.
+      # Race window: a post whose scheduled time falls between the count and the
+      # publish step would be attempted against a blocked token. That costs one
+      # of its 3 attempts, and publish_due_posts.py then exits 1 — red, logged,
+      # retried next hour. The throttle can never silently swallow a real loss.
       - name: Check Instagram token health
-        run: python scripts/check_token.py
+        run: |
+          DUE=$(python scripts/publish_due_posts.py --count-due)
+          echo "Due posts right now: $DUE"
+          python scripts/check_token.py \
+            --incident-file content/INCIDENT.json \
+            --due-count "$DUE"
         env:
           IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
           IG_USER_ID: ${{ secrets.IG_USER_ID }}
@@ -46,6 +68,10 @@ jobs:
       # always(): state changes written by a partially-failed publish run must
       # still be persisted, otherwise the next hourly run retries from stale
       # state (double-post risk) — but the job stays red from the step above.
+      # `git add -A content/` also carries content/INCIDENT.json: both its
+      # creation/update (the throttle's counter must survive between runs, or
+      # every hour looks like a first detection and goes red) and its deletion
+      # on recovery (`-A` stages removals, unlike a bare `git add`).
       - name: Commit queue/status changes
         if: always()
         run: |
