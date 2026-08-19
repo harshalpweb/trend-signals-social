@@ -27,8 +27,9 @@ Last verified: **2026-08-19** (CSMM live probe).
 | Publishing cap | ~25 API posts per rolling 24h — `GET /{ig-user-id}/content_publishing_limit` before any batch |
 | Status | 🟢 **RESOLVED 2026-08-19** — root cause was a **developer-account confirmation checkpoint** (Meta "unusual activity"), not the app. Founder completed the identity checkpoint; token probe flipped to `OK: token live for @trendradar.in`. Incident file auto-clears (`RECOVERED`) on the next hourly run. |
 | App ID | **2230374924469484** (TrendRadar Publisher), mode dev / unpublished, compliance `compliant`, no open violations (read via `meta-devtools` after re-consent). |
-| Facebook Page | **TrendRadar** (page id `61593158354383`, Media/News Company) created 2026-08-19 and **linked to @trendradar.in** (IG messages-in-Inbox enabled) — unlocks the Facebook-Login flow, FB Page publishing, and Ads eligibility. |
-| Next action | Optional Path-1 polish: generate a Facebook-Login long-lived token (scopes chosen: business_management, ads_management, instagram_basic, instagram_content_publish, instagram_manage_comments, instagram_manage_insights) — needs the founder to approve the OAuth consent popup in Graph API Explorer. The current Instagram-Login token already restores publishing, so this is an enhancement, not a blocker. |
+| IG business-account id | **17841440746293693** (the `/me` `user_id` on graph.instagram.com). NOTE: `27870001472663258` is the **app-scoped** id (`/me` `id`), NOT the Graph business-account id — conflating them caused failed calls on 2026-08-19. |
+| Facebook Page | **TrendRadar** — Graph page id **`1207351012469462`** (via meta-ads `ads_get_user_pages`); `61593158354383` is the *profile* id (new-Pages-experience), not a Graph object. Linked to @trendradar.in (IG messages-in-Inbox on). **Page API control deferred** — see below. |
+| Control plane | **Instagram runs on graph.instagram.com** via `scripts/ig_common.py` + the existing IG-Login token — publish, comments, insights, DMs all supported there. The OSS meta-mcp (graph.facebook.com) was **dropped** (CTO 2026-08-19): our app is Facebook-Login-for-Business, which needs a business login *configuration* to grant page/IG assets, not raw scopes. FB Page / Ads / Threads **deferred** until the CRO ledger justifies them (Ads = CFO-gated real money). |
 
 ### Incident detail — code 200 (opened 2026-08-19)
 
