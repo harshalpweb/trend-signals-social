@@ -11,6 +11,13 @@ Reads .env (FB_USER_TOKEN, META_APP_ID, META_APP_SECRET), then:
 Secrets are never printed — only key names, lengths, and non-secret ids.
 Run:  py -3.12 scripts/finish_meta_switchover.py
 """
+"""DEPRECATED 2026-08-19 (CTO ruling): the Facebook-Login switch-over is dropped.
+Instagram control runs on graph.instagram.com via ig_common.py with the IG-Login token
+(no FB-login token needed). This helper is kept only as a record of the attempted path;
+do not run it. If FB Page/Ads are ever unlocked, the correct mechanism for a
+Facebook-Login-for-Business app is a business login *configuration*, not this token exchange.
+"""
+
 import json
 import os
 import subprocess
@@ -108,10 +115,22 @@ def main():
     print(f"[2/4] pages visible via /me/accounts: {len(pages)} | IG business account: {ig_id or '(none)'}"
           + (f" via Page '{page_name}'" if page_name else ""))
 
-    # Fallback: query the known TrendRadar Page node directly for its linked IG account.
+    # Fallback A: test the known IG account id directly on graph.facebook.com.
+    # instagram_basic lets the token read /{ig-user-id} for a linked professional
+    # account, and that id is usually the same as the IG-login id — no page perms needed.
+    if not ig_id:
+        candidate = env.get("IG_LOGIN_USER_ID", "") or "27870001472663258"
+        ig = api_get(f"/{candidate}", {"fields": "username,name,profile_picture_url"}, bearer=use)
+        if isinstance(ig, dict) and ig.get("username"):
+            ig_id = candidate
+            print(f"      fallback A ok: IG account {ig_id} (@{ig['username']}) reachable on graph.facebook.com")
+        else:
+            print(f"      fallback A (direct IG id) failed: {ig}")
+
+    # Fallback B: query the known TrendRadar Page node directly for its linked IG account.
     # (/me/accounts is empty without pages_show_list, but the Page node is still readable.)
     if not ig_id:
-        known_page_id = env.get("FB_PAGE_ID", "") or "61593158354383"
+        known_page_id = env.get("FB_PAGE_ID", "") or "1207351012469462"
         pg = api_get(f"/{known_page_id}",
                      {"fields": "name,access_token,instagram_business_account{id,username}"},
                      bearer=use)
