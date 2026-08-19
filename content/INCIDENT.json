@@ -1,7 +1,7 @@
 {
   "first_seen_utc": "2026-08-18T21:17:51Z",
-  "last_seen_utc": "2026-08-19T01:37:45Z",
-  "checks_failed": 6,
+  "last_seen_utc": "2026-08-19T03:02:49Z",
+  "checks_failed": 7,
   "code": 200,
   "message": "OAuthException code=200: API access blocked.",
   "auth_mode": "instagram_login",
