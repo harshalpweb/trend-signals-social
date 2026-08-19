@@ -1,9 +1,0 @@
-{
-  "first_seen_utc": "2026-08-18T21:17:51Z",
-  "last_seen_utc": "2026-08-19T04:42:12Z",
-  "checks_failed": 8,
-  "code": 200,
-  "message": "OAuthException code=200: API access blocked.",
-  "auth_mode": "instagram_login",
-  "hint": "code 200 is an app/account-level restriction, not token expiry - refreshing will not help. Check Meta Developer Tools compliance findings and App Review status."
-}
