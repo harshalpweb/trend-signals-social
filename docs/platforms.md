@@ -25,8 +25,10 @@ Last verified: **2026-08-19** (CSMM live probe).
 | Health probe | `py -3.12 scripts/check_token.py` (exit 0 live / 2 OAuthException / 3 config / 4 network). CI adds `--incident-file content/INCIDENT.json --due-count "$DUE"` — see "Incident throttle" below. |
 | Graph client | `scripts/ig_common.py` — all three scripts go through it: token in an `Authorization: Bearer` header (never a query string), 30s timeout, every error string redacted. Tests: `py -3.12 -m pytest -q` (offline). |
 | Publishing cap | ~25 API posts per rolling 24h — `GET /{ig-user-id}/content_publishing_limit` before any batch |
-| Status | 🔴 **INCIDENT — `OAuthException code 200 "API access blocked."`** |
-| Next action | **Path 1** — founder links a Facebook Page to @trendradar.in and moves the app to the Facebook-Login-for-Business Instagram flow |
+| Status | 🟢 **RESOLVED 2026-08-19** — root cause was a **developer-account confirmation checkpoint** (Meta "unusual activity"), not the app. Founder completed the identity checkpoint; token probe flipped to `OK: token live for @trendradar.in`. Incident file auto-clears (`RECOVERED`) on the next hourly run. |
+| App ID | **2230374924469484** (TrendRadar Publisher), mode dev / unpublished, compliance `compliant`, no open violations (read via `meta-devtools` after re-consent). |
+| Facebook Page | **TrendRadar** (page id `61593158354383`, Media/News Company) created 2026-08-19 and **linked to @trendradar.in** (IG messages-in-Inbox enabled) — unlocks the Facebook-Login flow, FB Page publishing, and Ads eligibility. |
+| Next action | Optional Path-1 polish: generate a Facebook-Login long-lived token (scopes chosen: business_management, ads_management, instagram_basic, instagram_content_publish, instagram_manage_comments, instagram_manage_insights) — needs the founder to approve the OAuth consent popup in Graph API Explorer. The current Instagram-Login token already restores publishing, so this is an enhancement, not a blocker. |
 
 ### Incident detail — code 200 (opened 2026-08-19)
 
@@ -43,9 +45,15 @@ code 190). The token parses and is well-formed; the app is blocked. Usual causes
 to check them: Data Use Checkup overdue → business verification incomplete → app still in
 dev mode with a missing role → a policy action. Refreshing the token will **not** clear it.
 
-**Blocked on:** founder OAuth for the `meta-devtools` MCP (`claude mcp login meta-devtools`),
-which is what exposes compliance findings and App Review status. Until then the cause is
-inferred, not read.
+~~**Blocked on:** founder OAuth for the `meta-devtools` MCP.~~ **RESOLVED 2026-08-19.**
+Real root cause: a **developer-account confirmation checkpoint** on the "Trend Radar" account
+(`developers.facebook.com/apps/` showed "Account confirmation needed — unusual activity"; the app
+itself was fine). This is why every Graph call returned code 200 and why the devtools grant first
+showed zero apps. The founder completed the identity checkpoint (email confirmation code — an
+account-auth step only they can do); immediately after, `check_token.py` returned exit 0
+`OK: token live`, `meta-devtools devtools_app_list` returned the app with read+manage, and
+`devtools_compliance` returned `overall_status: compliant`, no open violations. No appeal needed.
+The Facebook Page was then created and linked to @trendradar.in (see status table).
 
 **Impact:** no post has actually exercised the token since 2026-08-17 — every hourly run since
 has printed "No due posts", so the restriction has been invisible. The next genuinely due post
@@ -121,6 +129,149 @@ currently holds pending posts for 2026-08-19/21/22/23 — from the moment one of
 and the hourly run is red again every hour, by design (posts really are being lost). If the incident
 is still open then, the queue should be pushed out or held (`needs_review: true`) rather than the
 alert weakened — that is a Growth-Lead/CoS queue decision, not a CSMM one.
+
+## Incident root cause — 2026-08-19
+
+Investigated by CSMM after the founder completed OAuth for the official `meta-devtools` and
+`meta-ads` MCPs. **Outcome: root cause narrowed but NOT confirmed — the diagnostic path is itself
+blocked.** Facts below; no token, app secret or app id is recorded here.
+
+### What was re-confirmed (live, this session)
+
+Direct read-only probes against `graph.instagram.com/v21.0`, token read from `HKCU\Environment`
+(181 chars, `IGAA…`), `Authorization: Bearer` header, all output redacted:
+
+| Endpoint | Result |
+|---|---|
+| `GET /me?fields=id,username` | HTTP 400 — `API access blocked.` / `OAuthException` / **code 200** |
+| `GET /debug_token` | HTTP 400 — same, code 200 |
+| `GET /{ig-user-id}/content_publishing_limit` | HTTP 400 — same, code 200 |
+
+The block is **app-wide** (it also hits `/debug_token`, an app-scoped endpoint), server-side, and
+reproduces from this machine and from a GitHub runner. Token expiry (code 190) and local
+environment are excluded.
+
+### What Meta's own docs say about code 200
+
+- Graph-wide error table (WhatsApp support → *Authorization errors*): **`200-299 API Permission —
+  "Permission is either not granted or has been removed."`** (HTTP 403 class).
+- Messenger error table: `200 Permission Error` — permission not reviewed / **app not live**.
+- The **Instagram Platform error-code table has no code-200 entry at all.** Notably, an
+  Instagram *account* restriction is a **different** error — `code 25 / subcode 2207050`
+  ("The Instagram account is restricted… inactive, checkpointed, or restricted"). We are not
+  seeing that, which argues against a plain IG-account checkpoint.
+- Related IG code `2534041`: *"The owner of the Instagram Professional account has revoked your
+  app's access."* — the revocation family is a live hypothesis.
+
+**Reading:** code 200 = an app permission that was **never granted or has been removed**. Consistent
+with (a) the app being deactivated/restricted so its permissions lapsed, or (b) the Instagram user
+having revoked the app. Not yet distinguishable with the tools available.
+
+### Why the MCP diagnosis could not be completed
+
+`mcp__meta-devtools__devtools_app_list` (action `list`, retried with `limit: 100`) returns:
+
+```json
+{"data":{"apps":[],"pagination":{"has_next_page":false}},"meta":{"auth_type":"USER_ACCESS_TOKEN"}}
+```
+
+**Zero apps.** Authentication itself succeeded (`auth_type: USER_ACCESS_TOKEN`, well-formed
+responses, no auth error). Per the tool's own contract, apps that are **restricted or deactivated
+are still listed**, carrying a `status` object — so an empty list does **not** mean "the app is
+restricted". It means the OAuth grant covers no apps. Causes, in likelihood order:
+
+1. The app was **not selected on the DevTools consent screen** (the grant is per-app, opt-in).
+2. The founder authorised with a **Facebook account that holds no role** on the app.
+3. The app has been **deleted**.
+
+Every other devtools tool — `devtools_app` (settings/mode/products), `devtools_app_review`,
+`devtools_compliance` (Data Use Checkup, verification, violations), `devtools_api_usage`
+(rate limits), `devtools_webhook_list` — **requires an `app_id`**. With no app listed and no app id
+recorded anywhere (searched `docs/`, `scripts/`, git history via `git log -S`, `~/.claude.json`;
+`META_APP_ID`/`META_APP_SECRET` are unset in `HKCU\Environment`), none of them could be called.
+App mode, products, permissions, roles, App Review status, compliance findings, rate limits and
+webhook subscriptions therefore remain **unread**.
+
+### Meta Ads (read-only)
+
+`mcp__meta-ads__ads_get_ad_accounts` → `{"ad_accounts": []}`. No ad account and no owning business
+is visible. This matches the intended state (no ad account, no payment method), but note it is
+**not distinguishable** from the same "granted no assets" condition seen in devtools. No write
+calls were made.
+
+### Remediation facts (from Meta docs, for sequencing)
+
+- Data Use Checkup is **not required while an app is in Development mode**, and **not required for
+  Standard Access**. If this app is dev-mode/standard-access, DUC is an unlikely cause.
+- If DUC *is* overdue: *"your app will be deactivated until DUC is completed."*
+- Reactivating an inactive app is expensive: *"any app that becomes inactive must have their use
+  cases, permissions and features **re-approved through App Review**"*, plus DUC.
+- Tech-Provider **Access Verification** failures return **code 100**, not 200, and only apply when
+  an app is used by *other* businesses — ruled out here.
+
+### Consequence for Path 1
+
+Path 1 (link a Facebook Page + move to Facebook Login for Business) should **not** be executed
+blind on this app. The choice depends on one unread fact:
+
+- App shows **healthy** → run Path 1 on this app (runbook above unchanged).
+- App shows **deactivated / restricted** → Path 1 on it inherits App Review + DUC. A **fresh app**
+  is likely cheaper: own-account IG publishing via Facebook Login for Business needs
+  `instagram_basic`, `instagram_content_publish`, `pages_show_list`, `pages_read_engagement`, which
+  work at Standard Access for assets the app admin owns.
+- Restriction sits on the **developer account or business** → a fresh app fails identically. The
+  dashboard alert surface is where this is visible.
+
+**Status: still 🔴 open.** Blocked on one founder dashboard action (below), not on engineering.
+
+### Founder action required — re-consent DevTools with the app selected
+
+Everything downstream is gated on one browser step. Nothing here needs a token pasted anywhere,
+and nothing here is irreversible.
+
+**Step 1 — put the app in the DevTools grant (2 minutes).**
+
+```
+claude mcp login meta-devtools
+```
+
+On the consent screen there is a **per-app picker**. The current grant has **zero** apps ticked,
+which is why every app-scoped tool is dead. Tick the @trendradar.in Instagram app (and any other
+app we own) and approve. If the app does not appear in the picker at all, that is itself the
+answer — jump to Step 2b.
+
+**Step 2 — while in the browser, read the two dashboard surfaces we cannot reach.**
+
+Go to <https://developers.facebook.com/apps> and open the app:
+
+- **2a.** Note the **App ID** (this is a public identifier — safe to paste back in chat) and any
+  red banner / **Alerts inbox** entry. The specific things worth reading out: app **mode**
+  (Development vs Live), whether **Data Use Checkup** is flagged overdue, and whether App Review →
+  *Permissions and Features* still shows `instagram_business_basic` /
+  `instagram_business_content_publish` as granted.
+- **2b.** If the app is **missing from `developers.facebook.com/apps` entirely**, the cause is not
+  a consent-picker miss — it is a removed role or a deleted app, and the recovery is a fresh app
+  rather than a repair. Say so and we re-plan.
+
+**Do NOT do yet:** the Path 1 switch-over (Facebook Page link, "Facebook Login for Business"
+product, 9-scope token). Reasons under "Consequence for Path 1" above — in short, if the app is
+deactivated, those permissions are **not grantable** until DUC + App Review are cleared, so
+generating the token would fail and the session would be wasted. Sequence is: read status →
+then choose repair-this-app vs fresh-app → then Path 1.
+
+**Timing — how much runway is left.** Measured 2026-08-19 04:44 UTC:
+
+| Fact | Value |
+|---|---|
+| `python scripts/publish_due_posts.py --count-due` | `0` |
+| Next queued post | `2026-08-19-signal-01` @ `2026-08-19T20:00+05:30` = **14:30 UTC** |
+| Runway before it is due | **~9h 45m** |
+| `content/INCIDENT.json` | open, `checks_failed: 8`, `last_seen_utc 2026-08-19T04:42:12Z` |
+
+Until 14:30 UTC the hourly run stays **green** (throttled, `DUE=0`) and nothing is being lost.
+From 14:30 UTC the run goes **red every hour** and posts are genuinely missed — by design. If the
+incident is still open by then, the correct move is to push the queue dates out or set
+`needs_review: true` (a Growth-Lead/CoS call), **not** to weaken the alert.
 
 ## Shared Graph client — `scripts/ig_common.py`
 
@@ -218,7 +369,7 @@ eligibility.
 |---|---|
 | Threads | account not yet authorised; `THREADS_ACCESS_TOKEN` / `THREADS_USER_ID` unset. Threads API is independent of the IG auth gap, so it can go live before Path 1 lands. |
 | Facebook Page | none linked yet — this is the Path 1 prerequisite |
-| Meta Ads | `meta-ads` MCP registered at user scope, **needs founder OAuth**; no ad account / payment method attached (deliberate — spend stays impossible until the founder unlocks it) |
+| Meta Ads | `meta-ads` MCP registered at user scope; founder OAuth **done 2026-08-19** and calls authenticate. `ads_get_ad_accounts` → `[]` — no ad account, no payment method (deliberate: spend stays impossible until the founder unlocks it). Note the empty list is **not** proof of "no ad account exists" — it is indistinguishable from the same zero-asset grant seen in devtools. |
 | Webhooks | none subscribed |
 
 ## MCP control surfaces
@@ -226,16 +377,30 @@ eligibility.
 | Server | Scope | Tools | Auth state |
 |---|---|---|---|
 | `meta` (OSS `@mikusnuz/meta-mcp` v2.1.x, MIT) | inline in `.claude/agents/chief-social-media-manager.md` | 66 (33 IG, 27 Threads, 6 app/token/webhook) | env-var driven; **currently broken — see defect below** |
-| `meta-devtools` (official) | user (`~/.claude.json`) | app settings, compliance findings, App Review, rate limits, webhooks | ❌ needs founder OAuth |
-| `meta-ads` (official) | user (`~/.claude.json`) | ~29 ads tools | ❌ needs founder OAuth |
+| `meta-devtools` (official) | user (`~/.claude.json`) | app settings, compliance findings, App Review, rate limits, webhooks | ⚠️ OAuth **done** 2026-08-19 and calls authenticate, but the grant covers **0 apps** — every app-scoped tool is unusable. Needs re-consent with the app selected. |
+| `meta-ads` (official) | user (`~/.claude.json`) | ~29 ads tools | ⚠️ OAuth **done** 2026-08-19; `ads_get_ad_accounts` → `[]` (no ad account visible) |
 
-**Open defect (found 2026-08-19):** the `meta` server's `${INSTAGRAM_ACCESS_TOKEN}` /
-`${INSTAGRAM_USER_ID}` placeholders are **not expanded** — a live call returned
-`GET /${INSTAGRAM_USER_ID} (400) … code 190 "Cannot parse access token"`, i.e. the literal
-placeholder string was sent as the path and the token. The variables *are* present in
-`HKCU\Environment`; they were set with `setx` after this Claude Code process started, and
-Windows processes do not pick up `setx` changes retroactively. **Fix: restart Claude Code.**
-Re-verify with `mcp__meta__ig_get_profile` before concluding anything about the OSS client.
+**Open defect (found 2026-08-19, re-tested after restart — original fix was WRONG):**
+
+Originally diagnosed as stale `setx` env vars in a long-running process, with "restart Claude
+Code" as the fix. **Re-tested 2026-08-19 in a post-restart session — still broken, and the error
+changed, which is the informative part:**
+
+| When | Call | Error |
+|---|---|---|
+| Before restart | `mcp__meta__ig_get_profile` | code 190 **"Cannot parse access token"**, path literally `/${INSTAGRAM_USER_ID}` |
+| After restart | `mcp__meta__meta_get_app_info` | code 190 **"Error validating application. Invalid application ID."** |
+
+A *different* error proves the restart worked and placeholder expansion is no longer the issue.
+The remaining cause is simpler: **`META_APP_ID` and `META_APP_SECRET` were never set at all** —
+both are absent from `HKCU\Environment` and from every `.env` on this machine. So the OSS `meta`
+server has no app identity to authenticate with.
+
+**Real fix (blocked on the founder action above):** obtain the App ID + App Secret from the app
+dashboard, then set `META_APP_ID` / `META_APP_SECRET` (plus `INSTAGRAM_ACCESS_TOKEN` /
+`INSTAGRAM_USER_ID`) as user env vars and start a fresh session. Re-verify with
+`mcp__meta__ig_get_profile`. Note this is **necessary but not sufficient** — the server also
+hardcodes `graph.facebook.com/v26.0`, so it stays unusable for IG until Path 1 lands.
 
 ## Non-Meta platforms
 
