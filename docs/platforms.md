@@ -412,3 +412,29 @@ hardcodes `graph.facebook.com/v26.0`, so it stays unusable for IG until Path 1 l
 
 Any new platform needs a compliance-register entry (`trend_predictor/docs/legal/compliance-register.md`)
 from Legal **before** the first API call.
+
+## Meta FB-login switch-over — state 2026-08-19 (paused, resumable)
+
+**Done:**
+- Facebook Page **TrendRadar** (`61593158354383`) created + linked to @trendradar.in.
+- Generated a Facebook-Login token in Graph API Explorer (scopes: business_management,
+  ads_management, instagram_basic, instagram_content_publish, instagram_manage_comments,
+  instagram_manage_insights) and **exchanged it for a long-lived (~60-day) token**.
+- Stored in gitignored `.env`: `META_APP_ID`, `META_APP_SECRET`, `FB_LONG_LIVED_TOKEN`,
+  `FB_USER_TOKEN` (= long-lived). `META_APP_ID`/`META_APP_SECRET` also mirrored to user-level
+  Windows env vars. Helper: `scripts/finish_meta_switchover.py`.
+
+**Not done yet (deferred by founder):**
+- `INSTAGRAM_USER_ID` for the Graph (facebook.com) side is unresolved: `/me/accounts` returned
+  0 pages because the token lacks **`pages_show_list`**. Two ways to finish later:
+  1. Re-run `scripts/finish_meta_switchover.py` — it now falls back to reading the Page node
+     `61593158354383` directly (works if `business_management` can read the Page; no regen).
+  2. Otherwise regenerate the token in Graph API Explorer **with `pages_show_list`** added, then
+     re-run the script.
+- Once `INSTAGRAM_USER_ID` (the IG **business-account** id, which may differ from the IG-login
+  id `27870001472663258`) is in `.env` + env vars, restart Claude Code to activate the OSS
+  `meta-mcp` interactive control plane (66 IG+Threads tools) + Ads.
+
+**Unaffected / still running:** the production publish pipeline uses the existing **IG-login**
+token on `graph.instagram.com` (unchanged). Posting resumes on schedule; the FB-login work above
+is additive and does not touch the pipeline until we deliberately flip `IG_AUTH_MODE`.
