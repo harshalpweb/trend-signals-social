@@ -3,10 +3,12 @@
 # The weekly-routine skill reads this file at generation time.
 
 cadence:
-  posts_per_week: 5
+  posts_per_week: 7
   schedule:
     monday: signal
+    tuesday: signal      # added 2026-08-25, founder asked for daily cadence
     wednesday: signal
+    thursday: signal     # added 2026-08-25, founder asked for daily cadence
     friday: signal
     saturday: digest
     sunday: build_in_public
