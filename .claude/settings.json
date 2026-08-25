@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PROJECT_DIR:-.}/../income-engine/.claude/hooks/session_handoff.py\" && py -3 \"${CLAUDE_PROJECT_DIR:-.}/../income-engine/.claude/hooks/session_handoff.py\" read || true",
+            "timeout": 15,
+            "statusMessage": "Loading portfolio registry digest…"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "test -f \"${CLAUDE_PROJECT_DIR:-.}/../income-engine/.claude/hooks/git_commit_guard.py\" && py -3 \"${CLAUDE_PROJECT_DIR:-.}/../income-engine/.claude/hooks/git_commit_guard.py\" || true",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
