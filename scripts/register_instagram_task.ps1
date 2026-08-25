@@ -52,16 +52,16 @@ aborting the whole run.
 # list (and re-run this script) if instagram-weekly-routine starts needing non-Canva tools
 # beyond what's listed here.
 #
-# NOTE (2026-08-25, trendradar diagnosis): the live 8/23 scheduled run showed every Canva
-# MCP call getting denied even with this allowlist -- the runtime call goes through a
-# different connector, mcp__claude_ai_Canva__*, not mcp__plugin_canva_canva__*. A fix
-# (one clean string insert) was diagnosed and verified but NOT YET APPLIED -- blocked by
-# the auto-mode safety classifier on Set-ScheduledTask (a system-level change). See
-# income-engine/docs/registry/instagram_sub_project.md for status; get the exact fix
-# string from the CoS session before re-running this script to apply it.
+# FIXED 2026-08-25 (trendradar diagnosis): the live 8/23 scheduled run showed every Canva
+# MCP call getting denied even with the plugin allowlist -- the runtime call actually goes
+# through a different connector, mcp__claude_ai_Canva__*, not mcp__plugin_canva_canva__*.
+# Both are now allow-listed. Applying this fix requires re-running this script
+# (Register-ScheduledTask -Force is a system-level change) -- that step is
+# founder-reserved, not done by this commit. See
+# income-engine/docs/registry/instagram_sub_project.md for status.
 $allowedTools = @(
     "Bash", "Read", "Write", "Edit", "Glob", "Grep", "Skill",
-    "mcp__plugin_canva_canva__*"
+    "mcp__plugin_canva_canva__*", "mcp__claude_ai_Canva__*"
 ) -join " "
 
 # instagram-signals reads the trend_predictor checkout, which is outside this task's
