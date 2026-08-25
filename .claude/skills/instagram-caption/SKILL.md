@@ -7,11 +7,20 @@ description: Write the caption + hashtags for a TrendRadar post, given a content
 
 ## Voice
 
-Match the account's established voice (see the live first post, `content/posted/2026-08-17-build-in-public-01/*.json`):
+Match the account's established voice:
 
-> "We track real search trends, marketplace bestsellers, and India's festival calendar to spot what's about to blow up — before it does. No guesses. No hype. Just signals."
+> "We track real search trends, marketplace bestsellers, and India's festival calendar to catch what's moving before everyone else notices. No guesswork. Just the numbers."
 
 Short sentences. Confident but not hyped. Every claim traceable to an actual number from `instagram-signals` — never invent a stat.
+
+**Human-voice check (mandatory before finalizing any caption or exemplar):** run the
+mechanical AI-tell check in this repo's `CLAUDE.md` against the caption text. Em-dash
+budget is 0 for a short social caption; avoid "X, not (just) Y" tails, "isn't X — it's
+Y" antitheses, and staccato-tricolon-plus-"Just X" resolutions; never use "quietly" or
+"actually." (Corrected 2026-08-25 — the previous exemplar quoted here was itself the
+worst-scoring AI-tell offender in the account's history and had propagated its tells
+into every caption written since; see `income-engine/docs/consults/2026-08-25-cco-ai-
+tell-writing-audit.md`.)
 
 ## By post type
 

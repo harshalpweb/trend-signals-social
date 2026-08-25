@@ -26,3 +26,43 @@ This repo lives as a sibling to `income-engine/` on disk
 (`C:\Users\2026\Documents\trend-signals-social`), not nested inside it —
 deliberate, not an oversight (see the registry entry's "Repo" line for
 why moving it wasn't done as part of this absorption).
+
+## Customer-facing prose: human-voice rule (CCO audit, 2026-08-25)
+
+Duplicated from `income-engine/CLAUDE.md` — this repo sits outside
+`income-engine/` and does not inherit that file via Claude Code's
+directory-hierarchy search, so this rule is repeated here verbatim.
+Applies to every Instagram caption and any other customer/follower-facing
+text this repo produces.
+
+Measured against real human baselines (Paul Graham, Seth Godin, and a
+topic-matched blog post; 0.06-0.23 em-dashes/100 words), every portfolio
+artifact audited scored 8-74x that rate — this account's worst live post
+scored 4.44/100w (19-74x). Standing rule: em-dash budget ≤1 per 400
+words, never more than 1 per paragraph, **0 for a short social caption**;
+avoid em-dash-introduced lists/parentheticals, "X, not (just) Y" tails,
+"isn't X — it's Y" antitheses, balanced-antithesis semicolons, and
+staccato-tricolon-plus-"Just X" resolutions; `actually` ≤1/500 words;
+`quietly` banned outright. Run this mechanical check before shipping any
+caption or locking in a voice exemplar:
+
+```bash
+py -3 -c "
+import sys,re
+t=open(sys.argv[1],encoding='utf-8').read(); w=len(t.split()); EM=chr(8212)
+em=t.count(EM); rate=em/max(w,1)*100
+print(f'words={w} em-dash={em} per100w={rate:.2f}  (cap 0.25, human 0.06-0.23)')
+print('EM-DASH: ' + ('FAIL' if rate>0.25 else 'pass'))
+for n,p in [('X-not-just-Y',r'(?i),\s+not\s+(just\s+)?[a-z]'),
+            ('quietly',r'(?i)\bquietly\b'),('actually',r'(?i)\bactually\b')]:
+    m=re.findall(p,t)
+    if m: print(f'  {n}: {len(m)} hit(s)')
+" <file>
+```
+
+A voice exemplar quoted inside any skill file must itself pass this check
+before being locked in as "the voice to match" — an unaudited exemplar
+propagates its own tells into everything written after it (this is
+exactly what happened to `instagram-caption/SKILL.md`'s exemplar before
+the 2026-08-25 fix). Full audit:
+`income-engine/docs/consults/2026-08-25-cco-ai-tell-writing-audit.md`.
