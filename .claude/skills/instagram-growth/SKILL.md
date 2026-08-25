@@ -23,7 +23,7 @@ See `config.yaml` in this folder. Do not hardcode these values elsewhere — rea
 
 ## The hook (slide 1) is most of the battle
 
-- Never reveal the insight on slide 1 — open a curiosity gap the swipe resolves. E.g. "We found 1 metric most founders miss — swipe" not "Here's the metric." [references/psychology.md §2]
+- Never reveal the insight on slide 1 — open a curiosity gap the swipe resolves. E.g. "We found 1 metric most founders miss, swipe to see it" not "Here's the metric." [references/psychology.md §2] (Fixed 2026-08-25 — the original example quoted here used an em-dash, exactly the propagation-vector pattern the CCO AI-tell audit found in `instagram-caption/SKILL.md`; verify any quoted example hook against `CLAUDE.md`'s mechanical check before adding new ones.)
 - Slide 1 needs to work in under 2 seconds: bold headline, high contrast, one clear visual. If a viewer scrolls past without engaging, Instagram gives carousels a rare "second chance" re-serve using slide 2 as the new entry point — so slide 2 should also be able to stand alone as a hook. [references/algorithm.md §1, §3 — tagged confirmed/Mosseri]
 - Curiosity-gap framing must stay honest. "We tracked this for 6 months, here's what shifted" is fine. Fake urgency ("This just happened!" when it didn't) or exaggerated claims are explicitly off-limits — see Don'ts.
 
