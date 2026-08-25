@@ -27,6 +27,17 @@ This repo lives as a sibling to `income-engine/` on disk
 deliberate, not an oversight (see the registry entry's "Repo" line for
 why moving it wasn't done as part of this absorption).
 
+**Shared-checkout git safety (2026-08-25):** this is one physical directory
+multiple concurrent Claude Code sessions commit into directly, not
+per-session clones — discovered when a session's local commit sat unpushed
+until another session found it by chance while pushing unrelated work.
+`git_commit_guard.py` (wired above) only checks staged files at commit
+time, not concurrent Edit/Write calls on the same file or another
+session's unpushed local commits. Before any commit here — and especially
+before merge/reset/rebase — run `git status` and `git log --oneline -5`
+first, same discipline as `income-engine`'s own shared-repo git-safety
+default.
+
 ## Customer-facing prose: human-voice rule (CCO audit, 2026-08-25)
 
 Duplicated from `income-engine/CLAUDE.md` — this repo sits outside
