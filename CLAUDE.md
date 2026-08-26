@@ -54,26 +54,29 @@ words, never more than 1 per paragraph, **0 for a short social caption**;
 avoid em-dash-introduced lists/parentheticals, "X, not (just) Y" tails,
 "isn't X — it's Y" antitheses, balanced-antithesis semicolons, and
 staccato-tricolon-plus-"Just X" resolutions; `actually` ≤1/500 words;
-`quietly` banned outright. Run this mechanical check before shipping any
-caption or locking in a voice exemplar:
+`quietly` banned outright.
+
+**Mechanical check, 2026-08-26: use `copydesk`, not an inline script.**
+The inline script this section used to carry only implemented a subset
+of the rule above (missing the per-paragraph cap, caption mode, and the
+isn't-X-it's-Y/semicolon-antithesis detectors) — exactly the kind of
+drift the rule's own prose and its checker had fallen out of sync on.
+`copydesk` (`income-engine/copydesk/`, a sibling subproject, own git
+repo) is now the one canonical implementation; this repo doesn't
+auto-inherit it any more than it auto-inherits `income-engine/CLAUDE.md`,
+so call it by absolute path:
 
 ```bash
-py -3 -c "
-import sys,re
-t=open(sys.argv[1],encoding='utf-8').read(); w=len(t.split()); EM=chr(8212)
-em=t.count(EM); rate=em/max(w,1)*100
-print(f'words={w} em-dash={em} per100w={rate:.2f}  (cap 0.25, human 0.06-0.23)')
-print('EM-DASH: ' + ('FAIL' if rate>0.25 else 'pass'))
-for n,p in [('X-not-just-Y',r'(?i),\s+not\s+(just\s+)?[a-z]'),
-            ('quietly',r'(?i)\bquietly\b'),('actually',r'(?i)\bactually\b')]:
-    m=re.findall(p,t)
-    if m: print(f'  {n}: {len(m)} hit(s)')
-" <file>
+py -3 -m copydesk --caption <file>
 ```
-
-A voice exemplar quoted inside any skill file must itself pass this check
-before being locked in as "the voice to match" — an unaudited exemplar
-propagates its own tells into everything written after it (this is
-exactly what happened to `instagram-caption/SKILL.md`'s exemplar before
-the 2026-08-25 fix). Full audit:
-`income-engine/docs/consults/2026-08-25-cco-ai-tell-writing-audit.md`.
+(run from inside `C:\Users\2026\Documents\income-engine\copydesk`, or add
+that directory to `PYTHONPATH` first — it isn't pip-installed). Drop
+`--caption` for a longer piece where the general 1/400-words budget
+applies instead of the short-caption 0-cap. Run this before shipping any
+caption or locking in a voice exemplar — a voice exemplar quoted inside
+any skill file must itself pass the check before being locked in as "the
+voice to match," an unaudited exemplar propagates its own tells into
+everything written after it (this is exactly what happened to
+`instagram-caption/SKILL.md`'s exemplar before the 2026-08-25 fix). Full
+audit: `income-engine/docs/consults/2026-08-25-cco-ai-tell-writing-audit.md`;
+canonical rule source: `income-engine/copydesk/copydesk/rules.py`.
