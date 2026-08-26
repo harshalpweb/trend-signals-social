@@ -21,6 +21,23 @@ for current status (authoritative for cross-portfolio visibility).
   live to `@trendradar.in` via its own hourly GitHub Actions workflow —
   treat anything that touches publish timing/content-approval logic with
   that in mind).
+  **Narrow carve-out (founder ruling 2026-08-26, standing policy):**
+  sessions may log into the Facebook account tied to this Page using the
+  stored credentials (`docs/credentials/facebook.md`, gitignored) and
+  handle any 2FA/OTP prompt that appears, specifically to manage this
+  Facebook **Page's identity settings** — name, username/@handle, bio,
+  profile/cover photo. Same scope shape as `digital_products`' Systeme.io
+  carve-out (see that repo's `CLAUDE.md`). **Does NOT cover:** any
+  payment-method/billing change, ad-account access, monetization-program
+  enrollment, payout/bank/PAN/W-8BEN submission, deleting the account or
+  Page, or anything on the founder's personal Facebook profile/other
+  pages beyond this one. If ever unsure whether an action falls inside
+  this carve-out, treat it as outside and ask — this is account access,
+  not a reversible ₹0 item. Verify-before-done applies with extra
+  weight: after any change, log out and independently re-fetch the live
+  Page to confirm it actually persisted, same discipline the Systeme.io
+  carve-out required after that page's own history of edits that looked
+  successful but didn't land.
 
 This repo lives as a sibling to `income-engine/` on disk
 (`C:\Users\2026\Documents\trend-signals-social`), not nested inside it —
