@@ -9,7 +9,24 @@ Reads `trend_predictor`'s current state **read-only, locally** — nothing about
 
 ## Where trend_predictor lives and which interpreter to use
 
-Sibling checkout at `C:\Users\2026\Documents\trend_predictor` (confirm this path if it's moved). **Use the `py -3.12` launcher, not the `trends_predictor_env` venv** — as of 2026-08-17 the `trendpredictor` package is only importable from the global `py -3.12` interpreter; the venv raises `ModuleNotFoundError`. Verify this is still true before relying on it (`py -3.12 -c "import trendpredictor"` from the trend_predictor directory) — venvs get fixed.
+**Corrected 2026-08-28** (found live 3 days stale, false-receipts risk —
+`docs/consults/2026-08-28-cco-instagram-cadence-brand-review.md` in the
+`income-engine` repo): live checkout is
+`C:\Users\2026\Documents\income-engine\trend_predictor`, NOT the
+old pre-migration `C:\Users\2026\Documents\trend_predictor` sibling
+(that directory still exists but its `data/trend.db` is stale/frozen —
+see `income-engine/trend_predictor/docs/PROJECT-STATE.md`'s "environment
+split" note for the full migration history). **Never `cd` into or read
+from the old path** — running Python from inside it can shadow the
+installed package via `sys.path`, silently pulling stale numbers.
+**Use the `py -3.12` launcher, not the `trends_predictor_env` venv** —
+as of 2026-08-17 the `trendpredictor` package is only importable from the
+global `py -3.12` interpreter; the venv raises `ModuleNotFoundError`.
+Verify this is still true before relying on it
+(`py -3.12 -c "import trendpredictor; print(trendpredictor.__file__)"`
+from the live `income-engine\trend_predictor` directory — confirm the
+printed path resolves there, not the old sibling) — venvs get fixed and
+editable installs get repointed.
 
 ## How to pull signals
 
