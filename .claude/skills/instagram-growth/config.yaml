@@ -3,12 +3,27 @@
 # The weekly-routine skill reads this file at generation time.
 
 cadence:
-  posts_per_week: 7
+  # 2026-08-28 (Group CTO, on explicit founder delegation -- see
+  # income-engine/docs/consults/2026-08-28-group-cto-instagram-cadence-execution.md):
+  # signal days come back down 5 -> 3. The measured sustained eligible pool is
+  # ~6 distinct entities per 2-week no-repeat window (CCO measurement,
+  # 2026-08-28), which arithmetically supports at most 3 signal posts/week --
+  # the 2026-08-25 Tue/Thu additions asked for 10/window against a pool of 6.
+  # Each signal slot is also gated at generation time (family-aware freshness,
+  # see instagram-signals) and falls back to a `no_signal` post when nothing
+  # is eligible -- a slot never fabricates and never silently vanishes.
+  # RATCHET: restore tuesday/thursday to `signal` only when the measured
+  # eligible pool sustains >=10 distinct entities per 2-week window; daily
+  # posting can alternatively return via non-signal content types under the
+  # still-pending founder content-mix decision
+  # (income-engine/docs/consults/2026-08-25-instagram-cadence-content-mix-options.md).
+  posts_per_week: 5
+  generation_every_days: 2   # generation cadence (founder decision 2026-08-28); a *check* frequency, not a post quota
   schedule:
     monday: signal
-    tuesday: signal      # added 2026-08-25, founder asked for daily cadence
+    tuesday: none        # was signal 2026-08-25..28; see ratchet note above
     wednesday: signal
-    thursday: signal     # added 2026-08-25, founder asked for daily cadence
+    thursday: none       # was signal 2026-08-25..28; see ratchet note above
     friday: signal
     saturday: digest
     sunday: build_in_public

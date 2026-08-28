@@ -28,11 +28,18 @@ Exit codes:
      (which only sees committed state) will never find them
   4  config/environment problem (claude.exe not found, not a git repo, etc.)
 
-Usage: `py -3.12 scripts/run_weekly_routine.py` from the repo root (this is
-what the Scheduled Task's Action should invoke once repointed -- see this
-script's own module docstring end for the required Set-ScheduledTask change,
-which is founder-reserved per this repo's own CLAUDE.md and is NOT executed
-by this script or by any Claude session without the founder's action).
+Usage: `py -3.12 scripts/run_weekly_routine.py` from the repo root. Since
+2026-08-28 this IS what the Scheduled Task's Action invokes (re-registration
+executed under explicit founder authorization, recorded in income-engine/
+docs/consults/2026-08-28-group-cto-instagram-cadence-execution.md) -- the
+guard is live on every scheduled run, not just manual ones.
+
+Note (every-2-days cadence): a normal scheduled run always covers >=1
+posting day (every consecutive-day pair in config.yaml's schedule contains
+at least one posting day, and a dry signal slot still ships a no_signal
+post), so the >=1-new-post bar remains correct. A *manual* re-run mid-cycle
+whose 2-day horizon is already fully covered by surviving queue entries can
+legitimately exit 2 -- check the queue before treating that as a failure.
 """
 from __future__ import annotations
 
@@ -44,22 +51,32 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 QUEUE_DIR = REPO_ROOT / "content" / "queue"
 CLAUDE_EXE = r"C:\Users\2026\.local\bin\claude.exe"
 
-# Verbatim from the live Scheduled Task's Action as of 2026-08-26 (queried via
-# `(Get-ScheduledTask -TaskName TrendRadarWeeklyContent).Actions[0]`) -- keep
-# this in sync if the task's prompt/allowed-tools ever change; this script's
-# whole point is to wrap that exact invocation, not a redefinition of it.
+# CANONICAL PROMPT (since 2026-08-28): the live Scheduled Task's Action now
+# invokes THIS script (see scripts/register_instagram_task.ps1), so this is
+# the single source of truth for the headless prompt -- the old
+# three-copies-kept-in-sync arrangement (task Action / this file / register
+# script) is gone; the register script no longer embeds its own copy.
+# Horizon changed from "this week's posts" to "the next 2 days" per the
+# founder's 2026-08-28 cadence decision (income-engine/docs/consults/
+# 2026-08-28-group-cto-instagram-cadence-execution.md).
 CLAUDE_PROMPT = (
     "Run the instagram-weekly-routine skill (see "
     ".claude/skills/instagram-weekly-routine/SKILL.md in this repo) to "
-    "generate and queue this week's TrendRadar Instagram posts. Follow that "
-    "skill file exactly -- it documents the full sequence: instagram-signals "
+    "generate and queue TrendRadar Instagram posts for the NEXT 2 DAYS "
+    "only, per instagram-growth/config.yaml's cadence.schedule. Follow "
+    "that skill file exactly -- it documents the full sequence: "
+    "instagram-signals "
     "(reads C:\\Users\\2026\\Documents\\income-engine\\trend_predictor "
-    "read-only) -> instagram-caption -> instagram-carousel (Canva MCP, "
-    "locked master template DAHSjFtuvnU) -> assemble queue JSON -> git "
-    "commit and push. Do not publish anything directly -- that is handled "
+    "read-only, and applies its MANDATORY family-aware freshness gate and "
+    "freeze-detection rules) -> instagram-caption -> instagram-carousel "
+    "(Canva MCP, locked master template DAHSjFtuvnU) -> assemble queue "
+    "JSON -> git commit and push. A signal slot with zero gate-passing, "
+    "non-repeating entities ships as a no_signal post per the skill -- "
+    "never a stretched or stale claim, and never a silent skip. Do not "
+    "publish anything directly -- that is handled "
     "separately by this repo's own hourly GitHub Actions workflow. If any "
     "single post fails after retries, skip only that post (per the skill's "
-    "failure-handling section) and continue with the rest of the week "
+    "failure-handling section) and continue with the rest of the run "
     "rather than aborting the whole run."
 )
 CLAUDE_ARGS = [

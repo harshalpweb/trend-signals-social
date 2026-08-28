@@ -1,6 +1,6 @@
 ---
 name: instagram-signals
-description: Pull this week's top trend_predictor signals and turn them into Instagram content angles (which entity/product/category to feature, with the supporting numbers). Use at the start of the weekly content-generation routine, before writing any caption or design. Read-only against trend_predictor — never modifies it.
+description: Pull the current top trend_predictor signals and turn them into Instagram content angles (which entity/product/category to feature, with the supporting numbers). Use at the start of each content-generation run (every 2 days as of 2026-08-28), before writing any caption or design. Read-only against trend_predictor — never modifies it.
 ---
 
 # Pull This Week's Signals
@@ -46,14 +46,70 @@ Two real entry points in `trendpredictor` (verify these still exist before relyi
 
 `conviction_score` (`scoring/conviction.py`) is `len(agreeing) + 0.1 * momentum` — so a high conviction score does **not** by itself mean multiple signal families agree; check `len(detail["agreeing"])` directly. As of 2026-08-17, essentially every entity in the live DB has `agreeing == ['search']` — a single source. **Never claim "multiple signals agree" or write multi-source-corroboration language (in captions or footer text) unless `len(detail["agreeing"]) >= 2` for that specific entity, checked at generation time, not assumed.** If the strongest entity this week only has one agreeing family, that's fine — feature it with honest single-source framing ("per Google Trends search data," not "confirmed across signals"). A false corroboration claim is worse for this brand than a smaller one.
 
+## Family-aware freshness gate (MANDATORY, added 2026-08-28 — fail closed)
+
+A signal post may only be generated for an entity whose **cited family's own
+backing source refreshed within the last 48 hours**. This is a per-family
+check, not a per-entity check — an entity-level "any signal in 48h" check
+launders stale data as verified and is worse than no check (measured
+2026-08-28: the naive check passed 6 entities, the correct one passed 2;
+`income-engine/docs/consults/2026-08-28-cco-instagram-cadence-brand-review.md`).
+
+Exact procedure, for each candidate entity:
+
+1. Parse `detail["agreeing"]` for the family the caption would cite.
+2. Resolve that family to its backing source rows in the DB (family →
+   source via `momentum_decision`). **Join trap:** `amazon_bestsellers`
+   (marketplace family) rows are keyed by *product title* and joined via
+   `series_key='entity:<id>'` — NOT by entity/category name. Joining by
+   name silently marks fresh marketplace entities stale (this exact error
+   happened during the 2026-08-28 measurement).
+3. Require `max(signals.ingested_at) >= now - 48h` for that family's
+   backing source. If it fails, the entity is **ineligible for a signal
+   post today, no matter how high its composite score is.** Fail closed:
+   if you cannot determine the family's last ingest time, treat it as stale.
+
+For a **digest**, the same rule applies per cited number: any entity whose
+cited family last refreshed more than 48h ago must either be excluded or
+carry its actual last-refresh date in the copy ("as of Aug 25"), and the
+digest must say so plainly if the primary source was degraded during the
+covered week. A leaderboard of frozen numbers presented as this week's
+movement is a fabricated receipt.
+
+## Freeze detection (MANDATORY, added 2026-08-28)
+
+Never use movement language ("climbing," "rising," "moved," "jumped," or
+equivalents) about an entity whose composite score is bit-identical
+(difference < 1e-6) to the previous day's value, or whose cited family
+failed the freshness gate above. A frozen input is not a trend holding
+steady — it is a source that stopped reporting. Compare against the prior
+day's row (or the daily backup `data/backups/trend-YYYYMMDD.db`) before
+writing any movement claim. Measured cause: 2026-08-25→08-27, `rakhi` sat
+at exactly `0.6747` for three days because its inputs never refreshed —
+a "rakhi is climbing" post on those days would have been false.
+
+## `no_signal` fallback (added 2026-08-28 — a dry cycle is content, not a failure)
+
+If a scheduled signal slot has **zero** entities that pass both the
+freshness gate and the no-repeat window, do not stretch a stale or
+already-featured entity to fill it, and do not silently skip the slot.
+Ship a `no_signal` post instead: "we checked, nothing crossed our bar this
+cycle" — with the real numbers (how many entities scored, how many cleared
+the bar, what the bar is). This is on-brand receipts content; an account
+that reports quiet cycles honestly is more credible than one that finds a
+winner every cycle. See `instagram-caption` for the `no_signal` caption
+shape.
+
 ## Turning scores into a content angle
 
-For each of Mon/Wed/Fri (signal posts), pick ONE entity from the top movers, prioritizing by:
+For each signal slot in the current generation horizon (read `instagram-growth/config.yaml`'s `cadence.schedule` — do not hardcode the days), pick ONE entity from the top movers **that passes the family-aware freshness gate above**, prioritizing by:
 1. **Real corroboration first**: prefer entities with `len(detail["agreeing"]) >= 2` when any exist that week — that's the strongest, honestly-multi-source "receipts" story. If none exist, fall back to the single strongest single-source entity by `composite`/`momentum`, with correspondingly honest caption framing (see above).
-2. Recency of the move (`momentum`, `detail["lenses"].get("eta")`/`detail["lenses"].get("recent_break")` if present) — prefer things that just started moving over long-since-obvious trends.
-3. Do not repeat an entity featured in the last 2 weeks unless there's a genuinely new development. Check both this run's new queue entries **and** `content/posted/*/*.json`, `content/failed/*/*.json` (posted/failed posts are nested one directory per post, e.g. `content/posted/2026-08-24-signal-01/2026-08-24-signal-01.json` — a flat `content/posted/*.json` glob matches nothing).
+2. Recency of the move (`momentum`, `detail["lenses"].get("eta")`/`detail["lenses"].get("recent_break")` if present) — prefer things that just started moving over long-since-obvious trends. Movement claims are subject to the freeze-detection rule above.
+3. Do not repeat an entity featured in the last 2 weeks unless there's a genuinely new development. Check **all three** of: this run's new entries, **every surviving `content/queue/*.json` left by prior runs** (under every-2-days generation the queue is usually NOT empty at generation time — a prior run's still-pending posts count as featured), and `content/posted/*/*.json` + `content/failed/*/*.json` (posted/failed posts are nested one directory per post, e.g. `content/posted/2026-08-24-signal-01/2026-08-24-signal-01.json` — a flat `content/posted/*.json` glob matches nothing).
 
-For Sat (digest): pull the top 3-5 movers of the week as a leaderboard, not just one entity — state each entity's actual `agreeing` count honestly rather than a blanket claim for the whole digest.
+If nothing passes all three checks, that slot becomes a `no_signal` post (see above) — never a stretched claim.
+
+For Sat (digest): pull the top 3-5 movers of the week as a leaderboard, not just one entity — state each entity's actual `agreeing` count honestly rather than a blanket claim for the whole digest, and apply the freshness gate's digest rule (stale-family numbers carry their real last-refresh date; a degraded source week says so).
 
 For Sun (build-in-public): this doesn't need a signal pull — it's methodology/process content. Skip this skill for Sunday posts.
 
