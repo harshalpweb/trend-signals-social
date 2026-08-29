@@ -1,0 +1,51 @@
+{
+  "slug": "seller-wisdom-fad-vs-business",
+  "batch": "2026-08-29-html-rebuild",
+  "kicker": "SELLER WISDOM",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "EVERY FAD LOOKS LIKE A BUSINESS FOR [[THREE WEEKS]]",
+      "dek": "Four tests before you put real money into a trending product."
+    },
+    {
+      "role": "principle",
+      "klabel": "TEST 01",
+      "h": "THE REORDER TEST",
+      "body": [
+        "Will anyone buy this twice? A product people buy once is a campaign, and every campaign has an end date.",
+        "Repeat purchase is what turns a spike into a shop."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TEST 02",
+      "h": "THE MARGIN TEST",
+      "body": [
+        "Price a sale for the week after the hype cools. If the numbers only work during the spike, the spike owns your business."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TEST 03",
+      "h": "THE RESTOCK TEST",
+      "body": [
+        "Can you restock before the wave ends? When your supplier needs three weeks and the trend has two, you are buying leftover demand at full price."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TEST 04",
+      "h": "THE FEBRUARY TEST",
+      "body": [
+        "Would you still stock it in February? A real product survives the months when nobody is talking about it."
+      ]
+    },
+    {
+      "role": "closer",
+      "h": "WHICH FAD TOOK YOUR MONEY?",
+      "body": "Tell us in the comments. Every seller has one, and the story helps the next seller.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}

@@ -1,0 +1,63 @@
+{
+  "slug": "seller-playbook-festival-prep-countdown",
+  "batch": "2026-08-29-html-rebuild",
+  "kicker": "SELLER PLAYBOOK",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "FESTIVAL SEASON IS WON [[60 DAYS OUT]]",
+      "dek": "A countdown checklist so October feels calm while everyone else scrambles."
+    },
+    {
+      "role": "list",
+      "h": "60 days out: stock",
+      "items": [
+        "**Commit your bestseller reorder now.** Supplier lead times stretch every festival season.",
+        "**Cap the experiments.** One new product this season at most, funded from profit.",
+        "**Agree return terms with your supplier in writing** before volumes go up."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "40 days out: listings",
+      "items": [
+        "**Reshoot your top 5 product photos.** Festival buyers scroll fast and buy from pictures.",
+        "**Rewrite titles with the gifting words** buyers search in season.",
+        "**Plan 2 bundles.** Gift-ready pairs at a clean price point outsell singles in season."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "25 days out: logistics",
+      "items": [
+        "**Order packaging material for peak volume now.** It sells out too.",
+        "**Compare courier rates again.** Festival surcharges appear without notice.",
+        "**Set your COD limit.** Decide the order value above which you ask for prepaid."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "10 days out: money",
+      "items": [
+        "**Lock prices and stop reflex discounting.** A festival buyer pays for availability.",
+        "**Keep a cash buffer for returns.** RTO peaks two weeks after the sale peaks.",
+        "**Pre-write your buyer replies.** Delivery date, size, exchange. Speed converts."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "Sale week: hold the line",
+      "items": [
+        "**Count stock every morning.** Overselling costs more than underselling.",
+        "**Dispatch same day, every day.** Reviews this month decide next season.",
+        "**Launch nothing new.** Sale week runs on rails you already built."
+      ]
+    },
+    {
+      "role": "closer",
+      "h": "SAVE THIS. WORK IT WEEK BY WEEK.",
+      "body": "One stage at a time. Your festival season is already on the calendar.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}
