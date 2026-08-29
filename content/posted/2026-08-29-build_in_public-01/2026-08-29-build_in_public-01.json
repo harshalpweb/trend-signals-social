@@ -13,8 +13,10 @@
     "content/queue/slides/2026-08-29-build_in_public-01-8.png"
   ],
   "scheduled_time_ist": "2026-08-29T22:05:00+05:30",
-  "status": "pending",
+  "status": "posted",
   "attempts": 1,
   "needs_review": false,
-  "last_error": "OAuthException code=9007: Media ID is not available"
+  "last_error": "OAuthException code=9007: Media ID is not available",
+  "ig_post_id": "17982366279097963",
+  "posted_at": "2026-08-29T16:47:08.600790+00:00"
 }
