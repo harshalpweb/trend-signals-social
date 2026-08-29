@@ -1,0 +1,9 @@
+Our rakhi score sat at exactly 0.6747 for three straight days before Raksha Bandhan. To the 4th decimal.
+
+A frozen number is not a trend holding steady. It is a source that stopped reporting. If we had posted "rakhi is still climbing" on those days, it would have been false.
+
+So we added two rules to the pipeline: no movement language for any entity whose score is bit-identical to yesterday's, and no signal post at all unless the cited source refreshed in the last 48 hours. The chart shows the full arc: climb, freeze, festival, fade.
+
+Building an honest data brand means the boring failure modes get posted too.
+
+#BuildInPublic #DataDriven #TrendSpotting #IndiaEcommerce #RakshaBandhan
