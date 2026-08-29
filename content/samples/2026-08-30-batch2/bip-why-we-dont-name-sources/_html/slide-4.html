@@ -1,0 +1,134 @@
+<!doctype html><html><head><meta charset="utf-8"><style>/* TrendGiri "Bazaar Receipt" — HTML/CSS render system v1 (2026-08-29).
+   Supersedes scripts/render/ (Pillow). Type system is LOCKED:
+   exactly 2 display/heading sizes + 1 body size + 1 meta size.
+   Do not add per-slide sizes. Changes go through Group CTO review. */
+
+@font-face { font-family: 'Anton';        src: url('file:///C:/Users/2026/Documents/trend-signals-social/assets/fonts/Anton-Regular.ttf'); }
+@font-face { font-family: 'Inter';        font-weight: 400; src: url('file:///C:/Users/2026/Documents/trend-signals-social/assets/fonts/Inter-Regular.ttf'); }
+@font-face { font-family: 'Inter';        font-weight: 500; src: url('file:///C:/Users/2026/Documents/trend-signals-social/assets/fonts/Inter-Medium.ttf'); }
+@font-face { font-family: 'PlexMono';     src: url('file:///C:/Users/2026/Documents/trend-signals-social/assets/fonts/IBMPlexMono-SemiBold.ttf'); }
+@font-face { font-family: 'SpaceGrotesk'; src: url('file:///C:/Users/2026/Documents/trend-signals-social/assets/fonts/SpaceGrotesk-Bold.ttf'); }
+
+:root {
+  /* palette (Bazaar Receipt, accent pairs that failed WCAG removed) */
+  --cream:    #F5EEE2;
+  --paper:    #FFFDF8;
+  --ink:      #1A1714;
+  --ink-soft: #4A443B;   /* meta/secondary text on cream: 9.5:1 */
+  --marigold: #FFB627;   /* background blocks only, always with ink text */
+  --line:     #C9BFA9;   /* hairlines only, never text */
+
+  /* type scale — LOCKED, 4 tokens total */
+  --fs-display: 112px;  --lh-display: 1.04;   /* Anton, ALL CAPS only */
+  --fs-heading: 58px;   --lh-heading: 1.12;   /* Anton, ALL CAPS only */
+  --fs-body:    42px;   --lh-body:    1.40;   /* Inter 400/500; 42/1350 = 3.1% of canvas */
+  --fs-meta:    26px;   --lh-meta:    1.40;   /* PlexMono, chrome/labels only */
+
+  --pad: 84px;          /* 7.8% of 1080 — safe margin, every slide */
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body.slide {
+  width: 1080px; height: 1350px; overflow: hidden;
+  background: var(--cream); color: var(--ink);
+  display: flex; flex-direction: column;
+  padding: var(--pad);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--fs-body); line-height: var(--lh-body);
+  font-kerning: normal; text-rendering: optimizeLegibility;
+}
+
+/* ---- chrome ---- */
+header.brandrow {
+  display: flex; justify-content: space-between; align-items: baseline;
+  border-bottom: 4px solid var(--ink); padding-bottom: 22px;
+}
+.wordmark { font-family: 'SpaceGrotesk'; font-size: var(--fs-meta); letter-spacing: .08em; }
+.kicker   { font-family: 'PlexMono'; font-size: var(--fs-meta); letter-spacing: .14em; color: var(--ink-soft); }
+
+footer.footrow {
+  display: flex; justify-content: space-between;
+  border-top: 4px solid var(--ink); padding-top: 22px;
+  font-family: 'PlexMono'; font-size: var(--fs-meta);
+  letter-spacing: .1em; color: var(--ink-soft);
+}
+
+main.content {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 44px; padding: 44px 0;
+}
+
+/* ---- type roles ---- */
+.display {
+  font-family: 'Anton'; font-size: var(--fs-display); line-height: var(--lh-display);
+  text-transform: uppercase; letter-spacing: .004em;
+}
+.heading {
+  font-family: 'Anton'; font-size: var(--fs-heading); line-height: var(--lh-heading);
+  text-transform: uppercase; letter-spacing: .008em;
+}
+.dek { color: var(--ink-soft); max-width: 90%; }
+strong { font-weight: 500; }
+
+mark {
+  background: var(--marigold); color: var(--ink);
+  padding: 0 16px;
+  box-decoration-break: clone; -webkit-box-decoration-break: clone;
+  /* paint the highlight behind glyphs so tight display leading is never
+     clipped by the next line's highlight box */
+  position: relative; z-index: -1;
+}
+/* Anton's em box is 1.51em tall (ascent 1.18, descent .33; caps y=.32-1.18,
+   measured from the font file) — a full-height inline background collides
+   with adjacent display lines. Constrain the highlight to a cap-height band. */
+.display mark, .heading mark {
+  background: none;
+  background-image: linear-gradient(var(--marigold), var(--marigold));
+  background-repeat: no-repeat;
+  background-size: 100% 0.96em;
+  background-position: 0 51%;
+}
+
+/* ---- receipt list rows ---- */
+ol.rows { list-style: none; }
+ol.rows li {
+  display: flex; gap: 36px; align-items: flex-start;
+  padding: 30px 0; border-bottom: 3px solid var(--line);
+}
+ol.rows li:first-child { border-top: 3px solid var(--line); }
+.num {
+  font-family: 'PlexMono'; font-size: var(--fs-body); line-height: 1;
+  background: var(--ink); color: var(--cream);
+  min-width: 78px; height: 78px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+}
+ol.rows .t { flex: 1; padding-top: 6px; }
+
+/* ---- principle slide (wisdom lane: one oversized line) ---- */
+.klabel {
+  font-family: 'PlexMono'; font-size: var(--fs-meta); letter-spacing: .14em;
+  background: var(--marigold); color: var(--ink);
+  padding: 10px 20px; align-self: flex-start;
+}
+
+/* ---- quote card (dark) ---- */
+body.slide.dark { background: var(--ink); color: var(--cream); }
+body.dark header.brandrow, body.dark footer.footrow { border-color: var(--cream); }
+body.dark .kicker, body.dark footer.footrow, body.dark .dek { color: var(--line); }
+.qbar { width: 160px; height: 28px; background: var(--marigold); flex: none; }
+.attr { font-family: 'PlexMono'; font-size: var(--fs-meta); letter-spacing: .14em; color: var(--line); }
+
+/* ---- closer ---- */
+.handle {
+  font-family: 'PlexMono'; font-size: var(--fs-body); line-height: 1;
+  background: var(--marigold); color: var(--ink);
+  padding: 26px 34px; align-self: flex-start; letter-spacing: .06em;
+}
+</style></head>
+<body class="slide ">
+<header class="brandrow"><span class="wordmark">TRENDGIRI</span><span class="kicker">BUILD IN PUBLIC</span></header>
+<main class="content"><span class="klabel">WHAT IT BUYS</span><h2 class="display">AN ACCOUNT THAT DOESN'T VANISH</h2><p class="dek">Accounts that repost data they have no right to use collect takedowns, strikes, and one day a blank grid.</p><p class="dek">We would rather grow slower and still be here next Diwali.</p></main>
+<footer class="footrow"><span>THE DIGITAL BAZAAR</span><span>4/6</span></footer>
+</body></html>

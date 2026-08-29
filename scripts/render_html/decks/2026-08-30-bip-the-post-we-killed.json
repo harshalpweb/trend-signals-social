@@ -1,0 +1,50 @@
+{
+  "slug": "bip-the-post-we-killed",
+  "batch": "2026-08-30-batch2",
+  "kicker": "BUILD IN PUBLIC",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "WE KILLED OUR OWN [[BEST POST]]",
+      "dek": "Designed, written, queued. It never went live. Here's why."
+    },
+    {
+      "role": "principle",
+      "klabel": "THE POST",
+      "h": "READY TO SHIP, SCORE ON THE COVER",
+      "body": [
+        "A full trend receipt on a rising kitchen-appliance category. Our best chart of the week.",
+        "The cover quoted its signal score as of 'today'."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "THE RE-CHECK",
+      "h": "THE FRESH PULL SAID A DIFFERENT NUMBER",
+      "body": [
+        "Before anything ships, we re-pull the data. The category was still rising, but the score had slipped below the one printed on the slide.",
+        "Close enough that nobody would have noticed. Wrong enough that it wasn't true."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "THE THREE OPTIONS",
+      "items": [
+        "**Ship it anyway.** The design was done and the gap was small. Who checks?",
+        "**Swap the digits and pretend.** Change the number, keep the old story, hope they still match.",
+        "**Kill it and rebuild from fresh data.** Lose the slot, keep the promise on our grid honest."
+      ]
+    },
+    {
+      "role": "quote",
+      "q": "'TODAY' MEANS [[TODAY]]. OR IT MEANS NOTHING.",
+      "attr": "WHY THE POST DIED"
+    },
+    {
+      "role": "closer",
+      "h": "WE PICKED OPTION THREE.",
+      "body": "Receipts only, even when the receipt costs us the post.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}

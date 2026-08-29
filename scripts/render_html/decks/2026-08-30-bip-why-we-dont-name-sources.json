@@ -1,0 +1,50 @@
+{
+  "slug": "bip-why-we-dont-name-sources",
+  "batch": "2026-08-30-batch2",
+  "kicker": "BUILD IN PUBLIC",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "WE DON'T NAME OUR [[SOURCES]]. ON PURPOSE.",
+      "dek": "The most common question in our DMs, answered honestly."
+    },
+    {
+      "role": "principle",
+      "klabel": "THE QUESTION",
+      "h": "WHERE DO THE NUMBERS COME FROM?",
+      "body": [
+        "Every receipt we post says things like 'search interest' or 'marketplace bestseller data'. Vague on purpose.",
+        "The sources are real and public. The rules for republishing their data are strict, and we read them before we post."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "WHAT THE RULES COST US",
+      "items": [
+        "**No brand names for clout.** A famous platform's name in a headline gets reach. We genericize it instead.",
+        "**Posts die in review.** If a chart can't be shared under a source's terms, it never leaves the drafts folder.",
+        "**Slower posting.** Every number gets a can-we-defend-this check before it gets a design."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "WHAT IT BUYS",
+      "h": "AN ACCOUNT THAT DOESN'T VANISH",
+      "body": [
+        "Accounts that repost data they have no right to use collect takedowns, strikes, and one day a blank grid.",
+        "We would rather grow slower and still be here next Diwali."
+      ]
+    },
+    {
+      "role": "quote",
+      "q": "IF WE CAN'T DEFEND A NUMBER, [[YOU DON'T SEE IT.]]",
+      "attr": "HOUSE RULE"
+    },
+    {
+      "role": "closer",
+      "h": "ASK US ANYTHING. WE'LL TELL YOU WHAT WE CAN.",
+      "body": "Building an honest data account in public, rules and all.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}
