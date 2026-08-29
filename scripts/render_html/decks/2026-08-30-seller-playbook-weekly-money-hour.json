@@ -1,0 +1,54 @@
+{
+  "slug": "seller-playbook-weekly-money-hour",
+  "batch": "2026-08-30-batch2",
+  "kicker": "SELLER PLAYBOOK",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "GIVE YOUR SHOP ONE [[MONEY HOUR]] EVERY WEEK",
+      "dek": "A four-part Sunday routine that tells you whether you truly made a profit."
+    },
+    {
+      "role": "list",
+      "h": "First 10 min: collect",
+      "items": [
+        "**Export the week's orders** from every channel you sell on. One folder, one week.",
+        "**Download settlement statements.** What the platform paid you matters more than what buyers paid.",
+        "**Photograph paper receipts today.** Courier slips fade and vanish by month end."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "Next 20 min: record",
+      "items": [
+        "**Three columns are enough:** money in, money out, stock bought.",
+        "**Record every fee as a cost.** Commission, shipping, payment charges. They are real money.",
+        "**Mark COD orders as pending** until the settlement lands, never as received."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "Next 15 min: reconcile",
+      "items": [
+        "**Match each settlement to its orders.** A missing amount gets found this week or never.",
+        "**List returns and RTOs on their own line.** Each one reversed a sale and added a cost.",
+        "**Raise disputes now.** Claim windows close while you are busy selling."
+      ]
+    },
+    {
+      "role": "list",
+      "h": "Last 15 min: decide",
+      "items": [
+        "**Write one number: cash today vs last Sunday.** The direction matters more than the amount.",
+        "**Find the week's biggest cost and question it.** Same courier? Same packaging rate?",
+        "**Set one money action for the week.** A reorder, a markdown, or a rate renegotiation."
+      ]
+    },
+    {
+      "role": "closer",
+      "h": "SAVE THIS. RUN IT EVERY SUNDAY.",
+      "body": "Sellers who know their numbers weekly make festival-season decisions in minutes. Everyone else guesses.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "slug": "seller-wisdom-dead-stock-cashflow",
+  "batch": "2026-08-30-batch2",
+  "kicker": "SELLER WISDOM",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "STOCK IS NOT AN ASSET UNTIL IT [[MOVES]]",
+      "dek": "Why a full shelf can be the most expensive thing in your business."
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 01",
+      "h": "THE SHELF EATS FIRST",
+      "body": [
+        "Every rupee sitting in unsold stock is a rupee that cannot buy more of the product that IS selling.",
+        "Dead stock does not just sit there. It blocks the winner behind it."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 02",
+      "h": "SOLD OUT BEATS OVERSTOCKED",
+      "body": [
+        "Running out of a winner costs you a week of sales. Overbuying a loser can cost you the whole season's cash. Only one of these mistakes is survivable twice."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 03",
+      "h": "COUNT IN DAYS, NOT PIECES",
+      "body": [
+        "Ask how many days of sales each carton represents. Thirty days is inventory. A hundred and eighty days is an interest-free loan you gave your supplier."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 04",
+      "h": "THE FIRST MARKDOWN IS THE CHEAPEST",
+      "body": [
+        "Stock that missed its moment loses value every week you protect its price. Selling the mistake fast frees cash for the next good decision."
+      ]
+    },
+    {
+      "role": "closer",
+      "h": "WHAT IS THE OLDEST CARTON IN YOUR STOCK ROOM?",
+      "body": "Go look at the date on it. Then tell us in the comments how long it has been waiting.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}

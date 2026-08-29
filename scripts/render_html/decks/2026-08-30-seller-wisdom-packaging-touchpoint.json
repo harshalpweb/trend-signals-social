@@ -1,0 +1,51 @@
+{
+  "slug": "seller-wisdom-packaging-touchpoint",
+  "batch": "2026-08-30-batch2",
+  "kicker": "SELLER WISDOM",
+  "slides": [
+    {
+      "role": "hook",
+      "h": "YOUR PACKAGING IS YOUR ONLY [[PHYSICAL AD]]",
+      "dek": "It is the one piece of your brand every customer is guaranteed to hold in their hands."
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 01",
+      "h": "THE BOX IS THE HANDSHAKE",
+      "body": [
+        "Online, your brand is pixels until the doorbell rings. The parcel is the first real thing a customer touches. It says careful or careless before the product does."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 02",
+      "h": "SURVIVE THE JOURNEY FIRST",
+      "body": [
+        "Beautiful and broken loses to plain and intact every time.",
+        "Protection is step one of presentation. A dented product undoes everything printed on the box."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 03",
+      "h": "SPEND WHERE HANDS GO",
+      "body": [
+        "A handwritten thank-you card and clean inner wrap cost a few rupees per order. That is the cheapest moment of delight you will ever buy."
+      ]
+    },
+    {
+      "role": "principle",
+      "klabel": "TRUTH 04",
+      "h": "UNBOXING IS FREE MARKETING",
+      "body": [
+        "Customers photograph parcels worth photographing. Every shared unboxing is an ad you did not pay for, from a voice buyers trust more than yours."
+      ]
+    },
+    {
+      "role": "closer",
+      "h": "ORDER FROM YOURSELF THIS WEEK",
+      "body": "Ship a parcel to a friend and open it together like strangers. You will find at least one thing to fix.",
+      "handle": "@TRENDGIRI"
+    }
+  ]
+}
