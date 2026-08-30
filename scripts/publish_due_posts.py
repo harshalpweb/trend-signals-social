@@ -53,7 +53,7 @@ RAW_BASE = (
     f"{os.environ.get('GITHUB_REPOSITORY', '')}/main"
 )
 
-REQUIRED_FIELDS = ["id", "type", "caption", "slides", "scheduled_time_ist", "status"]
+REQUIRED_FIELDS = ["id", "type", "caption", "scheduled_time_ist", "status"]
 
 
 class PostError(Exception):
@@ -89,6 +89,9 @@ def load_due_posts(verbose: bool = True):
         missing = [f for f in REQUIRED_FIELDS if f not in post]
         if missing:
             due.append((path, post, PostError(f"missing fields: {missing}")))
+            continue
+        if not post.get("slides") and not post.get("video"):
+            due.append((path, post, PostError("missing media: provide slides or video")))
             continue
         if post["status"] != "pending":
             continue
@@ -155,7 +158,30 @@ def publish_container(container_id: str) -> str:
     return payload["id"]
 
 
+def publish_reel(video_path: str, caption: str) -> str:
+    """Create, process and publish one Reel from a public repository video."""
+    video_url = f"{RAW_BASE}/{video_path}"
+    payload = api_post(
+        f"{IG_USER_ID}/media",
+        ACCESS_TOKEN,
+        data={
+            "media_type": "REELS",
+            "video_url": video_url,
+            "caption": caption,
+            "share_to_feed": "true",
+        },
+        base=BASE,
+    )
+    container_id = payload.get("id")
+    if not container_id:
+        raise PostError("reel container response had no id")
+    wait_until_finished(container_id)
+    return publish_container(container_id)
+
+
 def publish_post(post: dict) -> str:
+    if post.get("video"):
+        return publish_reel(post["video"], post["caption"])
     if not post.get("slides"):
         raise PostError("no slides listed")
     item_ids = [create_item_container(slide) for slide in post["slides"]]
@@ -173,6 +199,11 @@ def move_post(path: Path, post: dict, dest_dir: Path) -> None:
         slide_path = ROOT / slide
         if slide_path.exists():
             shutil.move(str(slide_path), str(post_dir / Path(slide).name))
+    video_path = post.get("video")
+    if video_path:
+        source = ROOT / video_path
+        if source.exists():
+            shutil.move(str(source), str(post_dir / Path(video_path).name))
     (post_dir / f"{post['id']}.json").write_text(json.dumps(post, indent=2), encoding="utf-8")
     path.unlink(missing_ok=True)
 
