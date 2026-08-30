@@ -35,6 +35,11 @@ from ig_common import api_get, api_post, graph_base, redact
 MAX_ATTEMPTS = 3
 POLL_INTERVAL_S = 3
 POLL_TIMEOUT_S = 60
+# Video containers process server-side far longer than image containers —
+# 30-90s observed for short Reels (docs/2026-08-18-reels-handoff.md), and a
+# 2-minute video can exceed the image timeout several times over. Applies to
+# the REELS path only; the carousel path keeps the tighter 60s bound.
+REEL_POLL_TIMEOUT_S = 300
 
 ROOT = Path(__file__).resolve().parent.parent
 QUEUE_DIR = ROOT / "content" / "queue"
@@ -119,8 +124,8 @@ def create_item_container(slide_path: str) -> str:
     return payload["id"]
 
 
-def wait_until_finished(container_id: str) -> None:
-    deadline = time.time() + POLL_TIMEOUT_S
+def wait_until_finished(container_id: str, timeout_s: float = POLL_TIMEOUT_S) -> None:
+    deadline = time.time() + timeout_s
     while time.time() < deadline:
         payload = api_get(
             container_id, ACCESS_TOKEN, params={"fields": "status_code"}, base=BASE
@@ -175,7 +180,7 @@ def publish_reel(video_path: str, caption: str) -> str:
     container_id = payload.get("id")
     if not container_id:
         raise PostError("reel container response had no id")
-    wait_until_finished(container_id)
+    wait_until_finished(container_id, timeout_s=REEL_POLL_TIMEOUT_S)
     return publish_container(container_id)
 
 

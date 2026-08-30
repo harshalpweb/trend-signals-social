@@ -1,0 +1,14 @@
+{
+  "tracks": [
+    {"file": "assets/audio/bgm/house-vibez.mp3", "at": 0.0, "trim": [0.0, 20.0], "gain_db": -17, "fade_in": 0.3, "fade_out": 1.6},
+    {"file": "assets/audio/sfx/paper-slide.mp3", "at": 2.3, "gain_db": -8},
+    {"file": "assets/audio/sfx/typewriter-digital.mp3", "at": 4.4, "gain_db": -9},
+    {"file": "assets/audio/sfx/typewriter-digital.mp3", "at": 6.2, "gain_db": -9},
+    {"file": "assets/audio/sfx/typewriter-digital.mp3", "at": 8.0, "gain_db": -9},
+    {"file": "assets/audio/sfx/typewriter-digital.mp3", "at": 9.8, "gain_db": -9},
+    {"file": "assets/audio/sfx/typewriter-return-bell.mp3", "at": 11.6, "gain_db": -10},
+    {"file": "assets/audio/sfx/impact-cine-big.mp3", "at": 11.9, "gain_db": -10},
+    {"file": "assets/audio/sfx/paper-staple.mp3", "at": 13.2, "gain_db": -5},
+    {"file": "assets/audio/sfx/sweep-fast-small.mp3", "at": 17.6, "gain_db": -10}
+  ]
+}

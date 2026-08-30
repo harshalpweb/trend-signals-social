@@ -4,3 +4,11 @@ __pycache__/
 .env
 .pytest_cache/
 docs/credentials/
+
+# Licensed audio kit: Mixkit free license allows use inside rendered video
+# but not redistribution of standalone audio files -- these repos are
+# public, so the mp3s stay local-only (see assets/audio/ATTRIBUTION.md).
+assets/audio/**/*.mp3
+# Reel render intermediates (QA frame dumps, pre-mux video)
+**/qa/
+*.silent.mp4

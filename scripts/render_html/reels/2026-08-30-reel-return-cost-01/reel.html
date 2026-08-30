@@ -1,0 +1,164 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face { font-family:'Anton';        src:url('../../../../assets/fonts/Anton-Regular.ttf'); }
+@font-face { font-family:'Inter';        font-weight:400; src:url('../../../../assets/fonts/Inter-Regular.ttf'); }
+@font-face { font-family:'Inter';        font-weight:500; src:url('../../../../assets/fonts/Inter-Medium.ttf'); }
+@font-face { font-family:'PlexMono';     src:url('../../../../assets/fonts/IBMPlexMono-SemiBold.ttf'); }
+@font-face { font-family:'SpaceGrotesk'; src:url('../../../../assets/fonts/SpaceGrotesk-Bold.ttf'); }
+
+:root { --cream:#F5EEE2; --paper:#FFFDF8; --ink:#1A1714; --ink-soft:#4A443B; --marigold:#FFB627; --line:#C9BFA9; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html,body { width:1080px; height:1920px; overflow:hidden; }
+body { background:var(--cream); color:var(--ink); font-family:'Inter',sans-serif; position:relative;
+  font-kerning:normal; text-rendering:optimizeLegibility; }
+
+/* chrome */
+#brandrow { position:absolute; top:130px; left:84px; right:84px; display:flex; justify-content:space-between;
+  align-items:baseline; border-bottom:4px solid var(--ink); padding-bottom:22px; z-index:10; }
+#brandrow .wordmark { font-family:'SpaceGrotesk'; font-size:30px; letter-spacing:.08em; }
+#brandrow .kicker { font-family:'PlexMono'; font-size:26px; letter-spacing:.14em; color:var(--ink-soft); }
+#footrow { position:absolute; bottom:270px; left:84px; right:84px; display:flex; justify-content:space-between;
+  border-top:4px solid var(--ink); padding-top:22px; font-family:'PlexMono'; font-size:26px;
+  letter-spacing:.1em; color:var(--ink-soft); z-index:10; }
+
+/* hook */
+#hook { position:absolute; inset:0; z-index:15; display:flex; flex-direction:column; justify-content:center;
+  padding:0 84px; background:var(--cream); }
+#hook .block { background:var(--marigold); padding:70px 60px; width:fit-content; }
+#hook h1 { font-family:'Anton'; font-size:150px; line-height:1.02; text-transform:uppercase; }
+#hook .sub { font-size:46px; line-height:1.4; margin-top:54px; max-width:800px; font-weight:500; }
+
+/* receipt */
+#receipt { position:absolute; left:110px; right:110px; top:360px; background:var(--paper);
+  border:2px solid var(--line); box-shadow:0 24px 60px rgba(26,23,20,0.12); padding:56px 66px 60px; z-index:5; }
+#r-head { text-align:center; font-family:'PlexMono'; font-size:28px; letter-spacing:.18em; color:var(--ink-soft); }
+#r-title { text-align:center; font-family:'Anton'; font-size:64px; letter-spacing:.02em; margin-top:26px; text-transform:uppercase; }
+#r-sale { text-align:center; font-family:'PlexMono'; font-size:32px; margin-top:22px; color:var(--ink-soft); }
+.dash { border:none; border-top:3px dashed var(--line); margin:36px 0; }
+.item { display:flex; justify-content:space-between; align-items:baseline; margin-top:30px; opacity:0; }
+.item .n { font-size:42px; font-weight:500; }
+.item .n .d { font-size:30px; color:var(--ink-soft); display:block; margin-top:6px; font-weight:400; }
+.item .amt { font-family:'PlexMono'; font-size:48px; }
+#total { display:flex; justify-content:space-between; align-items:center; margin-top:10px; opacity:0; }
+#total .lbl { font-family:'Anton'; font-size:74px; text-transform:uppercase; }
+#total .amt { font-family:'PlexMono'; font-size:74px; font-weight:700; }
+#pct { text-align:left; margin-top:34px; font-size:38px; font-weight:500; opacity:0; max-width:640px; }
+#pct .hl { background:var(--marigold); padding:4px 16px; font-weight:700; }
+
+/* stamp */
+#stamp { position:absolute; right:-26px; top:-48px; transform:rotate(8deg); background:var(--marigold);
+  border:6px solid var(--ink); font-family:'Anton'; font-size:56px; padding:22px 40px; letter-spacing:.04em;
+  opacity:0; text-transform:uppercase; }
+
+/* takeaway + closer */
+#takeaway { position:absolute; left:84px; right:84px; bottom:380px; z-index:8; opacity:0; }
+#takeaway p { font-size:48px; line-height:1.38; font-weight:500; max-width:880px; }
+#closer { position:absolute; inset:0; z-index:20; background:var(--ink); color:var(--cream); display:flex;
+  flex-direction:column; justify-content:center; align-items:center; text-align:center; opacity:0; }
+#closer .wm { font-family:'SpaceGrotesk'; font-size:56px; letter-spacing:.06em; }
+#closer .tag { font-family:'Anton'; font-size:96px; margin-top:48px; text-transform:uppercase; }
+#closer .tag .m { color:var(--marigold); }
+#closer .cta { font-family:'PlexMono'; font-size:30px; letter-spacing:.14em; color:#B9AF9E; margin-top:64px; }
+</style></head>
+<body>
+
+<div id="brandrow"><span class="wordmark">TRENDGIRI</span><span class="kicker">SELLER PLAYBOOK &#183; REEL</span></div>
+<div id="footrow"><span>RECEIPTS, NOT HYPE</span><span>TRENDGIRI</span></div>
+
+<div id="receipt">
+  <div id="r-head">TRENDGIRI &#183; COST RECEIPT</div>
+  <div id="r-title">One return</div>
+  <div id="r-sale">SALE VALUE: &#8377;599 (COD)</div>
+  <hr class="dash">
+  <div class="item" id="i1"><span class="n">Forward shipping<span class="d">you paid to send it</span></span><span class="amt">&#8377;49</span></div>
+  <div class="item" id="i2"><span class="n">Reverse shipping<span class="d">you pay to get it back</span></span><span class="amt">&#8377;65</span></div>
+  <div class="item" id="i3"><span class="n">Repackaging<span class="d">it rarely comes back shelf-ready</span></span><span class="amt">&#8377;15</span></div>
+  <div class="item" id="i4"><span class="n">Damage risk<span class="d">averaged across returns</span></span><span class="amt">~&#8377;30</span></div>
+  <hr class="dash">
+  <div id="total"><span class="lbl">Gone</span><span class="amt">&#8377;159</span></div>
+  <div id="pct"><span class="hl">27% of the sale</span> on a single return.</div>
+  <div id="stamp">Not profit</div>
+</div>
+
+<div id="hook">
+  <div class="block"><h1>One<br>return.</h1></div>
+  <p class="sub">Most sellers count the lost margin. The real number is bigger. Watch the receipt print.</p>
+</div>
+
+<div id="closer">
+  <div class="wm">TRENDGIRI</div>
+  <div class="tag">Receipts,<br><span class="m">not hype.</span></div>
+  <div class="cta">FOLLOW FOR THE SELLER PLAYBOOK</div>
+</div>
+
+<script>
+window.REEL = { duration: 20.0, fps: 30 };
+const $ = id => document.getElementById(id);
+const c01 = p => Math.max(0, Math.min(1, p));
+const easeOut = p => 1 - Math.pow(1 - p, 3);
+const easeIO = p => p < .5 ? 2*p*p : 1 - Math.pow(-2*p+2, 2)/2;
+const back = p => { const c=1.70158, c3=c+1; return 1 + c3*Math.pow(p-1,3) + c*Math.pow(p-1,2); };
+const P = (t, t0, d, e) => { const p = c01((t - t0) / d); return e ? e(p) : p; };
+
+const ITEMS = [
+  { el: 'i1', t: 4.4,  amt: 49, pre: '' },
+  { el: 'i2', t: 6.2,  amt: 65, pre: '' },
+  { el: 'i3', t: 8.0,  amt: 15, pre: '' },
+  { el: 'i4', t: 9.8,  amt: 30, pre: '~' },
+];
+
+window.seek = function (t) {
+  // hook 0 - 2.6
+  const hook = $('hook');
+  if (t < 2.6) {
+    hook.style.display = 'flex';
+    hook.style.opacity = String(1 - P(t, 2.25, 0.35, easeIO));
+    const p = P(t, 0.05, 0.5, back);
+    hook.querySelector('.block').style.transform = `translateY(${(1 - p) * 60}px)`;
+    hook.querySelector('.block').style.opacity = String(P(t, 0.05, 0.2));
+    hook.querySelector('.sub').style.opacity = String(P(t, 0.7, 0.4));
+  } else hook.style.display = 'none';
+
+  // receipt paper rises 2.3 - 3.4
+  const r = $('receipt');
+  const rp = P(t, 2.3, 0.8, easeOut);
+  r.style.opacity = String(rp);
+  r.style.transform = `translateY(${(1 - rp) * 380}px)`;
+
+  // line items print
+  ITEMS.forEach(it => {
+    const el = $(it.el);
+    const p = P(t, it.t, 0.45, easeOut);
+    el.style.opacity = String(P(t, it.t, 0.2));
+    el.style.transform = `translateX(${(1 - p) * -30}px)`;
+    const cp = P(t, it.t + 0.1, 0.7);
+    el.querySelector('.amt').innerHTML = it.pre + '&#8377;' + Math.round(it.amt * cp);
+  });
+
+  // total slams 11.9
+  const tp = P(t, 11.9, 0.45, back);
+  $('total').style.opacity = String(P(t, 11.9, 0.15));
+  $('total').style.transform = `scale(${0.8 + 0.2 * Math.min(tp, 1.15)})`;
+  const cnt = P(t, 11.95, 0.6);
+  $('total').querySelector('.amt').innerHTML = '&#8377;' + Math.round(159 * cnt);
+
+  // stamp 13.2
+  const sp = P(t, 13.2, 0.3, easeOut);
+  $('stamp').style.opacity = String(t >= 13.2 ? 1 : 0);
+  $('stamp').style.transform = `rotate(8deg) scale(${2.2 - 1.2 * sp})`;
+
+  // pct 14.2
+  $('pct').style.opacity = String(P(t, 14.2, 0.35));
+
+
+  // closer 17.6 - 20
+  const cl = $('closer');
+  cl.style.opacity = String(P(t, 17.6, 0.45));
+  if (t >= 17.6) {
+    const p = P(t, 17.75, 0.45, back);
+    cl.querySelector('.tag').style.transform = `scale(${0.85 + 0.15 * p})`;
+    cl.querySelector('.cta').style.opacity = String(P(t, 18.5, 0.35));
+  }
+};
+window.seek(0);
+</script>
+</body></html>

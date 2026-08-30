@@ -30,7 +30,7 @@ def test_publish_reel_creates_processes_and_publishes(monkeypatch):
         "api_post",
         lambda path, token, data, base: posts.append((path, token, data, base)) or {"id": "container-1"},
     )
-    monkeypatch.setattr(publisher, "wait_until_finished", lambda container_id: None)
+    monkeypatch.setattr(publisher, "wait_until_finished", lambda container_id, **kwargs: None)
     monkeypatch.setattr(publisher, "publish_container", lambda container_id: "published-1")
 
     result = publisher.publish_reel("content/queue/video/demo.mp4", "Caption")
