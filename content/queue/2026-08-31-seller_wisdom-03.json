@@ -12,7 +12,7 @@
   ],
   "scheduled_time_ist": "2026-08-31T10:30:00+05:30",
   "status": "pending",
-  "attempts": 1,
+  "attempts": 2,
   "needs_review": false,
   "last_error": "OAuthException code=4: Application request limit reached"
 }
