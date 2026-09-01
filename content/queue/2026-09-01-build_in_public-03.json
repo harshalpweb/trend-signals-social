@@ -13,5 +13,6 @@
   "scheduled_time_ist": "2026-09-01T20:00:00+05:30",
   "status": "pending",
   "attempts": 0,
-  "needs_review": false
+  "needs_review": false,
+  "last_error": "OAuthException code=4 subcode=2207051: Application request limit reached"
 }
