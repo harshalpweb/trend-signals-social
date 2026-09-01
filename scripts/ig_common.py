@@ -126,8 +126,15 @@ def graph_base(mode: str | None = None, version: str | None = None) -> str:
 def _parse_error_payload(payload: Any, status_code: int) -> GraphAPIError | None:
     if isinstance(payload, dict) and payload.get("error"):
         err = payload["error"] if isinstance(payload["error"], dict) else {}
+        # error_subcode is often the ONLY field that distinguishes Meta's
+        # generic throttles (e.g. code=4 rolling-window app limit) from its
+        # behavioural/spam publishing throttles — during the 2026-08-30..09-01
+        # TrendGiri publish outage the logs carried code=4 with no subcode
+        # printed, which left the incident undiagnosable from logs alone.
+        subcode = err.get("error_subcode")
+        subcode_part = f" subcode={subcode}" if subcode is not None else ""
         return GraphAPIError(
-            f"{err.get('type', 'Error')} code={err.get('code', '?')}: "
+            f"{err.get('type', 'Error')} code={err.get('code', '?')}{subcode_part}: "
             f"{err.get('message', payload['error'])}",
             kind="api",
             code=err.get("code"),
@@ -798,17 +805,32 @@ def build_refresh_request(
     """(url, params, token_in_params) for the long-lived-token refresh call.
 
     Split out from refresh_token() so the URL construction is unit-testable with
-    a fake token/app id and no network. `token_in_params` is True for the
-    facebook_login flow, where Meta requires the token as `fb_exchange_token`
-    (there is no header form) — hence redaction is mandatory around it.
+    a fake token/app id and no network. `token_in_params` is True for BOTH live
+    flows — Meta's refresh endpoints have no header-auth form at all:
+
+    - instagram_login: `graph.instagram.com/refresh_access_token` requires
+      `access_token` as a query param (documented form:
+      `?grant_type=ig_refresh_token&access_token=<LONG_LIVED_ACCESS_TOKEN>`,
+      developers.facebook.com/docs/instagram-platform/reference/
+      refresh_access_token, checked 2026-09-01). Sending it only as an
+      Authorization header returns OAuthException code=100 "The parameter
+      access_token is required" — observed live on the first scheduled
+      refresh run, 2026-09-01, run 33486384240. The code=100 error is not
+      auth-shaped (code 190), so _request()'s param fallback never fired.
+    - facebook_login: `oauth/access_token` requires the token as
+      `fb_exchange_token`.
+
+    Redaction is therefore mandatory around both: the caller and this function
+    register the token before it ever enters a params dict.
     """
     mode = mode or auth_mode()
     if mode == AUTH_MODE_INSTAGRAM:
         # Unversioned, as Meta documents it and as this rail has always called it.
+        register_secret(current_token)
         return (
             f"{graph_host(mode)}/refresh_access_token",
-            {"grant_type": "ig_refresh_token"},
-            False,
+            {"grant_type": "ig_refresh_token", "access_token": current_token},
+            True,
         )
 
     app_id = app_id or os.environ.get("META_APP_ID")

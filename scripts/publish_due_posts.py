@@ -33,6 +33,20 @@ import ig_common
 from ig_common import api_get, api_post, graph_base, redact
 
 MAX_ATTEMPTS = 3
+
+# Meta throttle codes that are APP/user-level, not post-level: 4 = application
+# request limit reached, 17 = user request limit reached, 32 = page request
+# limit reached, 613 = custom rate limit. When one of these comes back, every
+# further publish call in the same run is near-guaranteed to fail the same way
+# while spending more of the very quota that is exhausted — and counting it
+# against the post's own MAX_ATTEMPTS budget moves innocent, already-cleared
+# content into content/failed/ (this silently killed 6 queued posts during the
+# 2026-08-30..09-01 code=4 outage; publish.yml's design note "zero API attempts
+# burned against a blocked app" always intended the opposite). So a rate-limit
+# error aborts the whole run: no attempt increment, no further posts tried,
+# run still red.
+RATE_LIMIT_ERROR_CODES = {4, 17, 32, 613}
+
 POLL_INTERVAL_S = 3
 POLL_TIMEOUT_S = 60
 # Video containers process server-side far longer than image containers —
@@ -63,6 +77,20 @@ REQUIRED_FIELDS = ["id", "type", "caption", "scheduled_time_ist", "status"]
 
 class PostError(Exception):
     pass
+
+
+def is_rate_limit_error(e: Exception) -> bool:
+    """True when `e` is a Graph error carrying an app/user-level throttle code.
+
+    Only ig_common.GraphAPIError carries `.code`; anything else (PostError,
+    network errors) returns False and keeps the normal per-post attempt
+    accounting.
+    """
+    code = getattr(e, "code", None)
+    try:
+        return int(code) in RATE_LIMIT_ERROR_CODES
+    except (TypeError, ValueError):
+        return False
 
 
 def require_env() -> None:
@@ -248,7 +276,7 @@ def main(argv: list[str] | None = None) -> int:
     # written before we decide the exit code.
     failures: list[str] = []
 
-    for path, post, precheck_error in due:
+    for index, (path, post, precheck_error) in enumerate(due):
         post_id = post.get("id", path.name)
         print(f"Processing {post_id}...")
         if precheck_error is not None:
@@ -266,6 +294,22 @@ def main(argv: list[str] | None = None) -> int:
             # committed to the repo by publish.yml, so an un-redacted requests error
             # (which embeds the request URL) would publish the token.
             reason = redact(e)
+            if is_rate_limit_error(e):
+                # App-level throttle — not this post's fault. Record it for
+                # observability, but do NOT burn one of the post's attempts,
+                # and do NOT keep hammering the exhausted quota with the
+                # remaining due posts. See RATE_LIMIT_ERROR_CODES above.
+                post["last_error"] = reason
+                path.write_text(json.dumps(post, indent=2), encoding="utf-8")
+                print(f"  app rate-limited, aborting run (attempt NOT counted): {reason}")
+                failures.append(f"{post_id}: app rate-limited, attempt not counted ({reason})")
+                skipped = [p.get("id", pth.name) for pth, p, _ in due[index + 1:]]
+                if skipped:
+                    failures.append(
+                        f"run aborted before trying {len(skipped)} remaining due post(s): "
+                        + ", ".join(skipped)
+                    )
+                break
             post["attempts"] = post.get("attempts", 0) + 1
             post["last_error"] = reason
             if post["attempts"] >= MAX_ATTEMPTS:

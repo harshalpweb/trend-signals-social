@@ -115,14 +115,25 @@ def test_version_is_one_constant():
 # --------------------------------------------------------------------------
 
 
-def test_instagram_refresh_url_keeps_token_out_of_params():
+def test_instagram_refresh_uses_documented_query_param_form():
+    # Meta's graph.instagram.com/refresh_access_token has NO header-auth form:
+    # the documented call is ?grant_type=ig_refresh_token&access_token=<TOKEN>
+    # (developers.facebook.com/docs/instagram-platform/reference/
+    # refresh_access_token), and the live endpoint rejects header-only auth
+    # with OAuthException code=100 "The parameter access_token is required"
+    # (observed on the first scheduled refresh run, 2026-09-01). The token
+    # MUST travel in the query params here; redaction, not header auth, is
+    # the leak defence (see the redaction test below).
     url, params, token_in_params = ig_common.build_refresh_request(
         FAKE_TOKEN, "instagram_login"
     )
     assert url == "https://graph.instagram.com/refresh_access_token"
-    assert params == {"grant_type": "ig_refresh_token"}
-    assert token_in_params is False
-    assert FAKE_TOKEN not in json.dumps(params)
+    assert params["grant_type"] == "ig_refresh_token"
+    assert params["access_token"] == FAKE_TOKEN
+    assert token_in_params is True
+    # Placing the token in params registers it as a secret immediately, so
+    # any error string that embeds the request URL still gets scrubbed.
+    assert ig_common.redact(FAKE_TOKEN) == "<REDACTED>"
 
 
 def test_facebook_refresh_url_uses_fb_exchange_token():
@@ -160,7 +171,11 @@ def test_refresh_token_facebook_flow_returns_new_token(monkeypatch):
     assert calls[0]["timeout"] == 30
 
 
-def test_refresh_token_instagram_flow_uses_header_auth(monkeypatch):
+def test_refresh_token_instagram_flow_sends_token_as_query_param(monkeypatch):
+    # Regression test for the 2026-09-01 refresh outage: the previous
+    # behaviour routed this call through header auth, which the live endpoint
+    # rejects with code=100 (not 190, so the param fallback never fired) —
+    # meaning the monthly auto-refresh could never succeed in this mode.
     calls = []
     monkeypatch.setattr(
         ig_common,
@@ -169,8 +184,27 @@ def test_refresh_token_instagram_flow_uses_header_auth(monkeypatch):
     )
     new = ig_common.refresh_token(FAKE_TOKEN, "instagram_login")
     assert new == "IGAAnewtoken"
-    assert calls[0]["headers"]["Authorization"] == f"Bearer {FAKE_TOKEN}"
-    assert "access_token" not in calls[0]["params"]
+    assert calls[0]["url"] == "https://graph.instagram.com/refresh_access_token"
+    assert calls[0]["params"]["grant_type"] == "ig_refresh_token"
+    assert calls[0]["params"]["access_token"] == FAKE_TOKEN
+    assert "Authorization" not in calls[0]["headers"]
+
+
+def test_instagram_refresh_network_error_is_redacted(monkeypatch):
+    # The whole reason the old code kept the token out of params was that
+    # `requests` embeds the full URL (query string included) in its exception
+    # messages. Now that the token IS a param, this pins the guarantee that
+    # such a message still cannot leak it.
+    calls = []
+    boom = requests.ConnectionError(
+        "Max retries exceeded with url: /refresh_access_token"
+        f"?grant_type=ig_refresh_token&access_token={FAKE_TOKEN}"
+    )
+    monkeypatch.setattr(ig_common, "requests", fake_requests([boom], calls))
+    with pytest.raises(ig_common.GraphAPIError) as exc:
+        ig_common.refresh_token(FAKE_TOKEN, "instagram_login")
+    assert FAKE_TOKEN not in str(exc.value)
+    assert "<REDACTED>" in str(exc.value)
 
 
 def test_refresh_network_error_is_redacted(monkeypatch):
@@ -362,3 +396,75 @@ def test_forced_failure_exits_one_and_last_error_has_no_token(monkeypatch, tmp_p
     captured = capsys.readouterr()
     assert FAKE_TOKEN not in captured.out
     assert FAKE_TOKEN not in captured.err
+
+
+# --------------------------------------------------------------------------
+# publish_due_posts: app-level rate limits must not burn per-post attempts
+# (regression: the 2026-08-30..09-01 code=4 outage moved 6 cleared posts to
+# content/failed/ purely by attempt-exhaustion, while every hourly run kept
+# spending calls against the already-exhausted quota)
+# --------------------------------------------------------------------------
+
+
+def test_rate_limit_error_aborts_run_without_burning_attempts(monkeypatch, tmp_path, capsys):
+    mod = _load_publish_module(monkeypatch, tmp_path)
+    _write_due_post(mod.QUEUE_DIR, "p1")
+    _write_due_post(mod.QUEUE_DIR, "p2")
+    throttle = {
+        "error": {
+            "message": "Application request limit reached",
+            "type": "OAuthException",
+            "code": 4,
+            "error_subcode": 2207051,
+        }
+    }
+    calls = []
+    monkeypatch.setattr(
+        ig_common, "requests", fake_requests([FakeResponse(throttle, 403)], calls)
+    )
+
+    assert mod.main() == 1  # still a red run — never a silent skip
+
+    # Exactly ONE Graph call was made: the first post's first container
+    # create. The second due post must not have been attempted at all.
+    assert len(calls) == 1
+
+    p1 = json.loads((mod.QUEUE_DIR / "p1.json").read_text(encoding="utf-8"))
+    assert p1.get("attempts", 0) == 0  # NOT counted against MAX_ATTEMPTS
+    assert p1["status"] == "pending"
+    assert "code=4" in p1["last_error"]
+    assert "subcode=2207051" in p1["last_error"]  # subcode now surfaced for diagnosis
+
+    p2 = json.loads((mod.QUEUE_DIR / "p2.json").read_text(encoding="utf-8"))
+    assert "last_error" not in p2 and p2.get("attempts", 0) == 0
+
+    # Neither post may have been moved out of the queue.
+    assert not (tmp_path / "failed").exists() or not any((tmp_path / "failed").iterdir())
+    captured = capsys.readouterr()
+    assert "aborting run" in captured.out
+    assert "p2" in captured.err  # the skip is named in the failure summary
+
+
+def test_non_rate_limit_api_error_still_burns_an_attempt(monkeypatch, tmp_path):
+    mod = _load_publish_module(monkeypatch, tmp_path)
+    _write_due_post(mod.QUEUE_DIR, "p1")
+    err = {
+        "error": {"message": "API access blocked.", "type": "OAuthException", "code": 200}
+    }
+    monkeypatch.setattr(ig_common, "requests", fake_requests([FakeResponse(err, 400)], []))
+    assert mod.main() == 1
+    state = json.loads((mod.QUEUE_DIR / "p1.json").read_text(encoding="utf-8"))
+    assert state["attempts"] == 1
+    assert state["status"] == "pending"
+
+
+def test_is_rate_limit_error_discriminates_codes(monkeypatch, tmp_path):
+    mod = _load_publish_module(monkeypatch, tmp_path)
+    for code in (4, 17, 32, 613):
+        assert mod.is_rate_limit_error(ig_common.GraphAPIError("x", code=code))
+    assert not mod.is_rate_limit_error(ig_common.GraphAPIError("x", code=200))
+    assert not mod.is_rate_limit_error(ig_common.GraphAPIError("x"))  # code=None
+    assert not mod.is_rate_limit_error(mod.PostError("no code attr"))
+    # Meta payloads normally carry ints, but a stringified code must not
+    # silently disable the guard.
+    assert mod.is_rate_limit_error(ig_common.GraphAPIError("x", code="4"))
