@@ -11,8 +11,8 @@
     "content/queue/slides/2026-08-31-seller_wisdom-04-6.png"
   ],
   "scheduled_time_ist": "2026-08-31T21:30:00+05:30",
-  "status": "pending",
-  "attempts": 2,
+  "status": "failed",
+  "attempts": 3,
   "needs_review": false,
   "last_error": "OAuthException code=4: Application request limit reached"
 }
