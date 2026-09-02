@@ -59,6 +59,12 @@ ROOT = Path(__file__).resolve().parent.parent
 QUEUE_DIR = ROOT / "content" / "queue"
 POSTED_DIR = ROOT / "content" / "posted"
 FAILED_DIR = ROOT / "content" / "failed"
+# Single stop mechanism for every execution path (CI, workflow_dispatch, and
+# — the actual 2026-09-02 duplicate-post incident's vector — an ad-hoc local
+# run with credentials in env). GH Actions being disabled does nothing to
+# guard the local path, so this file is the one thing every path checks.
+# Re-enable is a deliberate commit deleting this file, never an in-place edit.
+PAUSE_FILE = ROOT / "content" / "PUBLISH_PAUSED"
 
 # Read leniently at import time so `--count-due` (and the tests) work with no
 # credentials in the environment; the publish path calls require_env() first and
@@ -259,6 +265,18 @@ def main(argv: list[str] | None = None) -> int:
     # directly from the test suite, where sys.argv holds pytest's own flags.
     # The CLI entrypoint below passes sys.argv[1:] explicitly.
     args = build_parser().parse_args([] if argv is None else argv)
+    if PAUSE_FILE.exists():
+        # Exit clean before any Graph call, any env check, any file write.
+        # count-due reports 0 (not the real due count) so a caller like
+        # check_token.py's throttle sees "nothing to do" and doesn't page
+        # anyone for a pause that was chosen on purpose.
+        if args.count_due:
+            print(0)
+        else:
+            print(f"Publishing paused: {PAUSE_FILE} exists. Delete it in a "
+                  f"deliberate commit to resume.")
+        return 0
+
     if args.count_due:
         # Same due logic as a real run, silenced: a post the publisher would
         # skip must not be counted as due, or the incident throttle would fail

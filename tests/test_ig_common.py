@@ -350,6 +350,10 @@ def _load_publish_module(monkeypatch, tmp_path):
     monkeypatch.setattr(mod, "POSTED_DIR", tmp_path / "posted")
     monkeypatch.setattr(mod, "FAILED_DIR", tmp_path / "failed")
     monkeypatch.setattr(mod, "ROOT", tmp_path)
+    # Isolate from the real repo's content/PUBLISH_PAUSED — these tests exercise
+    # normal publish behavior and must not depend on whether the live repo
+    # happens to be paused at test-run time.
+    monkeypatch.setattr(mod, "PAUSE_FILE", tmp_path / "PUBLISH_PAUSED")
     (tmp_path / "queue").mkdir()
     return mod
 
@@ -456,6 +460,52 @@ def test_non_rate_limit_api_error_still_burns_an_attempt(monkeypatch, tmp_path):
     state = json.loads((mod.QUEUE_DIR / "p1.json").read_text(encoding="utf-8"))
     assert state["attempts"] == 1
     assert state["status"] == "pending"
+
+
+# --------------------------------------------------------------------------
+# publish_due_posts: PAUSE_FILE must short-circuit every path before any
+# Graph call, any env check, any file write (regression: the 2026-09-02
+# duplicate-post incident's root vector was an ad-hoc local run publishing
+# already-live content because nothing local knew to stop).
+# --------------------------------------------------------------------------
+
+
+def test_pause_file_blocks_real_run_with_zero_graph_calls(monkeypatch, tmp_path, capsys):
+    mod = _load_publish_module(monkeypatch, tmp_path)
+    _write_due_post(mod.QUEUE_DIR, "p1")
+    calls = []
+    monkeypatch.setattr(ig_common, "requests", fake_requests([], calls))
+    mod.PAUSE_FILE.write_text("paused for testing", encoding="utf-8")
+
+    assert mod.main() == 0
+    assert calls == []  # not one Graph call made
+    # The due post is untouched: still pending, still in the queue.
+    state = json.loads((mod.QUEUE_DIR / "p1.json").read_text(encoding="utf-8"))
+    assert state["status"] == "pending"
+    assert "PUBLISH_PAUSED" in capsys.readouterr().out
+
+
+def test_pause_file_blocks_even_without_credentials(monkeypatch, tmp_path):
+    # The pause check must come before require_env(), so a paused repo never
+    # even needs credentials in env to no-op cleanly (matches an ad-hoc local
+    # run with a half-configured shell).
+    mod = _load_publish_module(monkeypatch, tmp_path)
+    monkeypatch.setattr(mod, "IG_USER_ID", "")
+    monkeypatch.setattr(mod, "ACCESS_TOKEN", "")
+    mod.PAUSE_FILE.write_text("paused for testing", encoding="utf-8")
+
+    assert mod.main() == 0  # no SystemExit from require_env()
+
+
+def test_pause_file_makes_count_due_report_zero(monkeypatch, tmp_path, capsys):
+    # A paused repo must never let check_token.py's throttle think work is
+    # due (and page someone) for a pause that was chosen on purpose.
+    mod = _load_publish_module(monkeypatch, tmp_path)
+    _write_due_post(mod.QUEUE_DIR, "p1")
+    mod.PAUSE_FILE.write_text("paused for testing", encoding="utf-8")
+
+    assert mod.main(["--count-due"]) == 0
+    assert capsys.readouterr().out.strip() == "0"
 
 
 def test_is_rate_limit_error_discriminates_codes(monkeypatch, tmp_path):

@@ -207,6 +207,7 @@ def test_count_due_counts_only_publishable_due_posts(tmp_path, monkeypatch, caps
     _write_post(queue, "held", -3, needs_review=True)
     (queue / "TEMPLATE.json").write_text('{"id": "TEMPLATE"}', encoding="utf-8")
     monkeypatch.setattr(publish_due_posts, "QUEUE_DIR", queue)
+    monkeypatch.setattr(publish_due_posts, "PAUSE_FILE", tmp_path / "PUBLISH_PAUSED")
 
     assert publish_due_posts.main(["--count-due"]) == 0
 
@@ -230,6 +231,7 @@ def test_count_due_counts_malformed_posts_as_due(tmp_path, monkeypatch, capsys):
     bad.pop("caption")
     (queue / "missing-fields.json").write_text(json.dumps(bad), encoding="utf-8")
     monkeypatch.setattr(publish_due_posts, "QUEUE_DIR", queue)
+    monkeypatch.setattr(publish_due_posts, "PAUSE_FILE", tmp_path / "PUBLISH_PAUSED")
 
     assert publish_due_posts.main(["--count-due"]) == 0
     assert capsys.readouterr().out.strip() == "2"
@@ -239,6 +241,7 @@ def test_count_due_on_empty_queue_prints_zero(tmp_path, monkeypatch, capsys):
     queue = tmp_path / "queue"
     queue.mkdir()
     monkeypatch.setattr(publish_due_posts, "QUEUE_DIR", queue)
+    monkeypatch.setattr(publish_due_posts, "PAUSE_FILE", tmp_path / "PUBLISH_PAUSED")
 
     assert publish_due_posts.main(["--count-due"]) == 0
     assert capsys.readouterr().out.strip() == "0"
@@ -252,15 +255,17 @@ def test_count_due_needs_no_credentials(tmp_path, monkeypatch, capsys):
     queue = tmp_path / "queue"
     queue.mkdir()
     monkeypatch.setattr(publish_due_posts, "QUEUE_DIR", queue)
+    monkeypatch.setattr(publish_due_posts, "PAUSE_FILE", tmp_path / "PUBLISH_PAUSED")
 
     assert publish_due_posts.main(["--count-due"]) == 0
     assert capsys.readouterr().out.strip() == "0"
 
 
-def test_publish_path_still_requires_credentials(monkeypatch):
+def test_publish_path_still_requires_credentials(tmp_path, monkeypatch):
     monkeypatch.setattr(publish_due_posts, "IG_USER_ID", "")
     monkeypatch.setattr(publish_due_posts, "ACCESS_TOKEN", "")
     monkeypatch.delenv("GITHUB_REPOSITORY", raising=False)
+    monkeypatch.setattr(publish_due_posts, "PAUSE_FILE", tmp_path / "PUBLISH_PAUSED")
 
     with pytest.raises(SystemExit) as excinfo:
         publish_due_posts.main([])

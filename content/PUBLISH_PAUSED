@@ -1,0 +1,25 @@
+Publishing paused 2026-09-02 — mass duplicate-post incident on @trendgiri
+(7+ distinct pieces live 3-4x each, ~20+ duplicate posts, 2026-08-31 to
+2026-09-01). Root cause: a local publish_due_posts.py run succeeded
+against Instagram but its commit/push never reached origin, so a later
+run re-read the same "pending" queue file and republished it.
+
+Do not delete this file until:
+  1. Every item in content/queue/ and content/failed/ has been
+     reconciled against live Instagram media (ads_get_ig_media or
+     equivalent) — anything already live gets moved to content/posted/
+     with its real ig_post_id first. As of this pause, 6 live-dated
+     queue items (5x 2026-09-01, 1x 2026-09-02: build_in_public-03,
+     quote_card-03, seller-profit-os-inside, seller_playbook-04,
+     seller_wisdom-05, quote_card-04) are unreconciled and match the
+     duplicate cluster's caption families.
+  2. The duplicate posts have been cleaned up on the live account
+     (founder handling this personally).
+
+Full record: docs/registry/instagram_sub_project.md (search "NEW INCIDENT
+2026-09-02").
+
+Resuming: delete this file in its own deliberate commit, never in-place
+edit. publish_due_posts.py checks for its existence at the top of
+main() and exits clean (no Graph calls, no env check) if present —
+covers CI, workflow_dispatch, and local runs with credentials in env.
