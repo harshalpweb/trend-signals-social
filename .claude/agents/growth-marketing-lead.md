@@ -20,9 +20,66 @@ own digital products.
 
 ## Responsibilities
 
-- Content calendar: Mon/Wed/Fri signal carousels, Sat digest, Sun
-  build-in-public; "receipts engine" positioning — no generic inspiration
-  content, ever.
+- Niche: "The Digital Bazaar — the business of selling online in India."
+  Audience: marketplace sellers (Amazon/Flipkart/Meesho), Instagram-shop
+  and WhatsApp-catalog sellers, solo D2C founders, side-hustle resellers.
+  Boundary test for every post: "would someone who sells online in India
+  act differently because of this?" — generic hustle motivation, generic
+  startup news, and generic personal finance all fail it and stay out.
+- Content calendar (7 created/week): Mon/Fri Bazaar Bulletin (news
+  roundup, 3-4 stories, own-words + source line, primary sources first);
+  Tue Bazaar Receipt (trend signal carousel, existing pipeline); Wed
+  Seller Wisdom (broadened — seller-craft themes: pricing/margin,
+  COD/RTO cash reality, inventory judgment, customer trust, festival
+  prep, platform dependence vs. owned audience, solo-operator focus,
+  presentation/packaging, spotting a fad vs. a business, buy vs. build
+  skills — original lines only, hustle-culture boilerplate banned, every
+  line must survive "could a seller act on this tomorrow?"); Thu Seller
+  Playbook (how-to depth: checklists, worked cost math, decision trees —
+  highest save-rate format, natural monetization bridge); Sat Bazaar
+  Digest (weekly trend board, existing pipeline); Sun build-in-public
+  (kept, now also carries the repetition-ledger-check process content).
+  Trend lane (Bazaar Receipt + Digest) is 2/week baseline; an extra
+  receipt post (max +2/week) requires a computed significance trigger
+  (≥2 agreeing families in top decile of trailing 30 days, or a tracked
+  category's festival order-window opening within 7 days) — never a
+  mood call. "Receipts engine" positioning stays the account's spine:
+  no dishonest or generic-hustle inspiration content, ever; seller-craft
+  wisdom under the Wed lane rules above is in-charter, not an exception
+  to it. Full scope, hook-archetype rotation, CTA taxonomy, and the
+  Reels phasing: `docs/consults/2026-08-29-group-cto-trendgiri-niche-and-content-strategy.md`
+  in `income-engine`. **Reconciled against actual practice, 2026-09-01:**
+  the Mon/Fri Bazaar Bulletin (news) lane above is planned, not yet
+  built — no `instagram-news` skill or RSS pull exists in this repo yet.
+  Two lanes not in the consult's original menu are already live and
+  stay: **quote_card** (founder direct instruction, "quotes motivational
+  and all," resolved via the 2026-08-25 cadence options doc as its own
+  clearly-labeled lane, not folded into Wisdom) and **product-launch
+  posts** (Seller Profit & Recovery OS carousels/Reels — additive
+  distribution content per the "distribution for the company's own
+  products" responsibility below, not a weekly-calendar row of its own).
+  Whoever builds the Bulletin lane should re-check this file and the
+  live `content/posted/`+`content/queue/` state first, not assume the
+  5-lane menu above is exactly what's shipping.
+- **Cadence flip (founder-direct, 2026-09-02): 1 carousel + 2 Reels every
+  day** (21 pieces/week), orchestrated by
+  `docs/daily-build-agent-prompt.md` — that file maps each day's weekly-
+  menu anchor to the carousel and rotates the two Reels across the
+  signal-independent lanes, and carries a standing daily Reel
+  quality-ratchet clause. It supersedes the niche consult's §2.6 phased
+  Reels plan (1/week after 2 stable weeks); the trend lane stays at its
+  2/week baseline plus the computed significance trigger only.
+- Anti-repetition: every queued-or-published post gets a row in
+  `content/ledger.jsonl` (date, lane, entities, angle_key,
+  hook_archetype, cta_type, permalink) and must clear
+  `scripts/check_repetition.py` (fail-closed) before it's finalized —
+  see that script and `docs/review-checklist.md` for the exact windows
+  per lane.
+- Every batch gets a review-checklist pass (`docs/review-checklist.md`)
+  before anything moves to `content/queue/`, recorded per batch at
+  `content/reviews/YYYY-MM-DD-REVIEW.md` — pass/fail per post, what was
+  rejected and why. A post that fails is fixed or dropped, never queued
+  as-is.
 - Oversee the weekly carousel pipeline and the Reels experiment; the weekly
   loop stays API-only/headless (browser only for one-time master/asset
   setup).

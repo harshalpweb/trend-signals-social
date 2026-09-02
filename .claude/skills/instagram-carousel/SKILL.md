@@ -5,6 +5,32 @@ description: Turn a content angle (from instagram-signals) and caption (from ins
 
 # Generate a TrendRadar Carousel
 
+**SUPERSEDED 2026-08-29 — read `scripts/render_html/README.md` first.**
+The founder rejected this template's visual output outright ("looks
+very bad") and a full redesign process (2 research rounds + 3
+prototypes, `docs/consults/2026-08-29-group-cto-instagram-trendy-design-round1.md`
+and `-round2-selection.md` in the `income-engine` repo) replaced it
+with the cream/ink/marigold "Bazaar Receipt" system. That system's
+live implementation is the **HTML/Playwright renderer**
+(`scripts/render_html/`, this repo) — an intermediate Pillow renderer
+(`scripts/render/`) was itself superseded for new content (glyph-size
+defect; see the render_html README) and stays only as history. Neither
+is a Canva master template — the empty-content-box problem this file
+describes below was never actually about missing infrastructure
+(`raw.githubusercontent.com` slide hosting already existed the whole
+time); it just wasn't discovered until the redesign forced a real
+look. **The account is also renamed TrendGiri, not TrendRadar**
+(`docs/consults/2026-08-26-trendgiri-rename-checklist.md`) — every
+"TrendRadar" reference below is stale.
+
+This file is kept for its still-accurate Canva-mechanics knowledge
+(export flow, the AI-generator unreliability finding, the critique-gate
+pattern) in case a future decision moves generation back onto Canva —
+but do not copy `DAHSjFtuvnU` or follow the element map below for new
+content. Use `scripts/render_html/` per its README instead.
+
+## Original content (Canva master-template approach, historical)
+
 ## The master template
 
 There is no formal Canva "Brand Kit" for this account — the Canva plugin's MCP tools have no API to create one (`list-brand-kits` and `search-brand-templates` both return empty, and there is no create-brand-kit tool). Instead, brand consistency comes from a **master template design**, copied and edited each week:
