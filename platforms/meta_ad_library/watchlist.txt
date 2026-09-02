@@ -1,0 +1,61 @@
+# Meta Ad Library IN keyword watchlist — one keyword per line, '#' = comment.
+# Ordered: Rakhi-window commercial terms first (window ~2026-08-28), then core
+# digital-product niches. Keep <= 60 active lines: each keyword costs ~12s of
+# polite page time; 60 keywords ~= 12-15 min per daily run.
+
+# --- Rakhi window (seasonal, remove after 2026-09-05) ---
+rakhi gift
+raksha bandhan gift
+rakhi hamper
+rakhi for brother
+personalized rakhi gift
+digital gift card rakhi
+
+# --- Digital products core (permanent) ---
+canva template
+notion template
+resume template
+wedding invitation template
+digital planner
+journal printable
+kids worksheets
+phonics worksheets
+coloring book pdf
+ebook
+notes pdf
+study material pdf
+test series
+mock test
+handwritten notes
+ai course
+chatgpt course
+prompt pack
+lightroom preset
+reels course
+instagram growth
+digital marketing course
+excel course
+python course
+data science course
+stock market course
+options trading course
+personal finance course
+spoken english course
+ielts preparation
+upsc notes
+neet notes
+jee notes
+astrology report
+numerology report
+kundli report
+diet plan pdf
+meal plan pdf
+weight loss plan
+yoga course
+meditation course
+freelancing course
+passive income guide
+side hustle guide
+interview preparation kit
+linkedin optimization
+product management course
