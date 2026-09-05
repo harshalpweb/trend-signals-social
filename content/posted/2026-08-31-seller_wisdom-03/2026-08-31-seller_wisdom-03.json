@@ -11,8 +11,17 @@
     "content/queue/slides/2026-08-31-seller_wisdom-03-6.png"
   ],
   "scheduled_time_ist": "2026-08-31T10:30:00+05:30",
-  "status": "failed",
+  "status": "posted",
   "attempts": 3,
   "needs_review": false,
-  "last_error": "OAuthException code=4: Application request limit reached"
+  "ig_post_id": null,
+  "permalink": "https://www.instagram.com/trendgiri/p/DcuGQy9FSBg/",
+  "duplicate_permalinks": [
+    "https://www.instagram.com/trendgiri/p/DctkkW7oKA2/",
+    "https://www.instagram.com/trendgiri/p/DcsqPFhldEF/"
+  ],
+  "duplicate_count": 3,
+  "posted_at": null,
+  "reconciled_at": "2026-09-05T17:24:03.692563+00:00",
+  "reconciliation_note": "Reconciled 2026-09-05 (CoS): confirmed already-live via authenticated browser session against the account's own feed, exact caption-text match (og:description), not via Graph API -- no numeric ig_post_id available this pass. Locally recorded as pending/failed only because the 2026-09-01 OAuthException hit AFTER Meta had already created/published the post (confirmation call failed, not the publish itself)."
 }

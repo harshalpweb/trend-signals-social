@@ -7,8 +7,12 @@
     "content/queue/slides/2026-09-01-seller-profit-os-inside-2.png"
   ],
   "scheduled_time_ist": "2026-09-01T18:30:00+05:30",
-  "status": "pending",
+  "status": "posted",
   "attempts": 1,
   "needs_review": false,
-  "last_error": "OAuthException code=4: Application request limit reached"
+  "ig_post_id": null,
+  "permalink": "https://www.instagram.com/trendgiri/p/Dcvwe79oErb/",
+  "posted_at": null,
+  "reconciled_at": "2026-09-05T17:24:03.692563+00:00",
+  "reconciliation_note": "Reconciled 2026-09-05 (CoS): confirmed already-live via authenticated browser session against the account's own feed, exact caption-text match (og:description), not via Graph API -- no numeric ig_post_id available this pass. Locally recorded as pending/failed only because the 2026-09-01 OAuthException hit AFTER Meta had already created/published the post (confirmation call failed, not the publish itself)."
 }

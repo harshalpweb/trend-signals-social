@@ -1,0 +1,23 @@
+{
+  "id": "2026-08-31-quote_card-02",
+  "type": "quote_card",
+  "caption": "Crores of turnover makes a great screenshot. Margin pays your rent, your supplier and your packing tape. When you plan next month, plan the margin first and let turnover be the side effect.\n\nSend this to a seller who posts revenue screenshots.\n\n#OnlineSellingIndia #SmallBusinessIndia #EcommerceSeller #SellerWisdom #DigitalBazaar",
+  "slides": [
+    "content/queue/slides/2026-08-31-quote_card-02-1.png",
+    "content/queue/slides/2026-08-31-quote_card-02-2.png"
+  ],
+  "scheduled_time_ist": "2026-08-31T19:30:00+05:30",
+  "status": "posted",
+  "attempts": 3,
+  "needs_review": false,
+  "ig_post_id": null,
+  "permalink": "https://www.instagram.com/trendgiri/p/DcucrQSjb_Y/",
+  "duplicate_permalinks": [
+    "https://www.instagram.com/trendgiri/p/DcuGKH9lY-h/",
+    "https://www.instagram.com/trendgiri/p/DctkWLQoIed/"
+  ],
+  "duplicate_count": 3,
+  "posted_at": null,
+  "reconciled_at": "2026-09-05T17:24:03.692563+00:00",
+  "reconciliation_note": "Reconciled 2026-09-05 (CoS): confirmed already-live via authenticated browser session against the account's own feed, exact caption-text match (og:description), not via Graph API -- no numeric ig_post_id available this pass. Locally recorded as pending/failed only because the 2026-09-01 OAuthException hit AFTER Meta had already created/published the post (confirmation call failed, not the publish itself)."
+}

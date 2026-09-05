@@ -11,8 +11,12 @@
     "content/queue/slides/2026-09-01-build_in_public-03-6.png"
   ],
   "scheduled_time_ist": "2026-09-01T20:00:00+05:30",
-  "status": "pending",
+  "status": "posted",
   "attempts": 0,
   "needs_review": false,
-  "last_error": "OAuthException code=4 subcode=2207051: Application request limit reached"
+  "ig_post_id": null,
+  "permalink": "https://www.instagram.com/trendgiri/p/Dcw0C4vGTtV/",
+  "posted_at": null,
+  "reconciled_at": "2026-09-05T17:24:03.692563+00:00",
+  "reconciliation_note": "Reconciled 2026-09-05 (CoS): confirmed already-live via authenticated browser session against the account's own feed, exact caption-text match (og:description), not via Graph API -- no numeric ig_post_id available this pass. Locally recorded as pending/failed only because the 2026-09-01 OAuthException hit AFTER Meta had already created/published the post (confirmation call failed, not the publish itself)."
 }
